@@ -5,7 +5,7 @@ The telecom industry is evolving rapidly, moving away from **legacy, hardware-ce
 This repository is a **collection of our conference talks, blog posts, and open-source contributions**.
 
 ---
-## 🗂 Conference Talks  
+## 🗂 Conference Talks
 
 | Year | Conference/Platform | Talk Title | Slides | Video | Code Examples |
 |------|------------|------------|--------|-------|--------------|
