@@ -10,3 +10,4 @@ This repository is a **collection of our conference talks, blog posts, and open-
 | Year | Conference/Platform | Talk Title | Slides | Video | Code Examples |
 |------|------------|------------|--------|-------|--------------|
 | 2024 | KubeCon Europe | How We Are Moving from GitOps to Kubernetes Resource Model in 5G Core | [PDF](2024/KubeConEurope/slides.pdf) | [YouTube](https://youtu.be/crmTnB6Zwt8?si=WlfRGgTmiFfPzQLM) |  |
+| 2025 | CERN | Network Automation Using KRM at Swisscom 26-02-2025 | [PDF](2025/CERN/slides.pdf) | [CERN](https://videos.cern.ch/record/2301379) |  |
