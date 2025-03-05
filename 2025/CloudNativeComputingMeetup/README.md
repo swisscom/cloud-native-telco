@@ -1,5 +1,5 @@
-# Zühlke-cloud-native-2025-dns
-Resources used for the Zühlke Cloud Native Meetup 2025 Talk «Dig Smart: Creating A Reliable Cloud-Native DNS Service»
+# Cloud Native Computing Meetup 2025 in Zurich
+Resources used for the Cloud Native Computing Meetup 2025 Talk «Dig Smart: Creating A Reliable Cloud-Native DNS Service»
 
 
 ## Authors
