@@ -1,0 +1,11 @@
+apiVersion: externaldns.k8s.io/v1alpha1
+kind: DNSEndpoint
+metadata:
+  name: examplednsrecord2
+spec:
+  endpoints:
+  - dnsName: endpoint2.5gc.3gppnetwork.org
+    recordTTL: 1
+    recordType: CNAME
+    targets:
+    - target2.swisscom.com

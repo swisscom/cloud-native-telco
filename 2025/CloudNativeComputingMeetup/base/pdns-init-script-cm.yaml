@@ -1,0 +1,91 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: init-create-pdns-zones-script
+  namespace: dns
+data:
+  add_dns_zones.sh: |
+    #!/usr/bin/env bash
+    # Source: https://github.com/kubernetes-sigs/external-dns/issues/1400
+
+    # function to evaluate the http code sent and print the response
+    evaluate_response() {
+      local code=$(tail -n1 <<< "$1")
+        printf "[${script}] ... curl to pdns\n  http code: $code \n"
+        if [ "$DEBUG" == "true" ]; then
+          printf "DEBUG:\n  response: $1 \n"
+        fi
+      echo $code
+    }
+
+    script="$(basename "${0}")"
+    echo "[${script}] Starting..."
+    apk add --no-cache curl
+
+    for domain in ${DOMAINS//,/ }
+      do
+          echo "$domain"
+      done
+
+    # Store number of Domain Zones to create
+    OLDIFS=$IFS; IFS=','; read -a temp_domains <<< "$DOMAINS"; IFS=$OLDIFS
+    all_domains_count=${#temp_domains[*]}
+    domains=${DOMAINS//,/ }
+    counter=0
+    while [ "$counter" != "$all_domains_count" ]; do
+      if [ "$DEBUG" == "true" ]; then
+        echo "[${script}] DEBUG: Number of Domains: $all_domains_count"
+        echo "[${script}] DEBUG: counter before reset $counter"
+      fi
+      counter=0
+    # Loop through environment variables starting with DOMAIN
+      for domain in $domains; do
+        echo "[${script}] Checking if zone $domain already exists..."
+        response=$(curl --write-out \\n%{http_code} -s \
+                -H "X-API-Key: ${POWERDNS_API_KEY}" \
+                "${POWERDNS_SERVER}/api/v1/servers/localhost/zones/${domain}")
+        if [ "$DEBUG" == "true" ]; then
+          echo "[${script}] DEBUG: domain: $domain"
+          echo "[${script}] DEBUG: response: $response"
+        fi
+
+        # evaluate the result of the curl
+        result="$(evaluate_response "$response")"
+        # Check if Zone already exists
+        if [[ "$result" != *200* ]]; then
+          echo "[${script}] Creating zone for $domain..."
+          create_response=$(curl --write-out \\n%{http_code} -s -d "{
+              \"name\": \"${domain}\",
+              \"kind\": \"Native\",
+              \"masters\": [],
+              \"nameservers\": [ \"${domain}\" ] }" \
+              -H "X-API-Key: ${POWERDNS_API_KEY}" \
+              "${POWERDNS_SERVER}/api/v1/servers/localhost/zones")
+
+          if [ "$DEBUG" == "true" ]; then
+            echo "[${script}] DEBUG: create_response: $create_response"
+          fi
+
+          # evaluate the result of the curl
+          create_result="$(evaluate_response "$create_response")"
+
+          if [[ "$create_result" != *201* ]]; then
+            echo "[${script}] ERROR: Unable to create zone..."
+            # if the zone is not existing and the script can not create it the scripts exits
+            # The script is then restarted when Kubernetes tries to start the pod again
+            exit 1
+          fi
+          counter=$((counter + 1))
+          if [ "$DEBUG" == "true" ]; then
+            echo "[${script}] DEBUG: created counter: $counter"
+          fi
+        else
+          counter=$((counter + 1))
+          echo "[${script}] DNS Zones existing: $counter"
+          echo "[${script}] Zone already exists for $domain..."
+        fi
+      done
+    done
+    echo "[${script}] ...Complete"
+    sleep 2
