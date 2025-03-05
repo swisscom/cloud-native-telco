@@ -22,12 +22,13 @@ For docker engine / virtualization we use [colima](https://github.com/abiosoft/c
 
 - colima:
   - brew install colima
-  - colima start dns1 -c 4 -m 4 --network-address
-  - colima ssh -p dns1 # ssh onto colima node
+  - colima start dns -c 4 -m 4 --network-address
+  - colima ssh -p dns # ssh onto colima node
     - edit /etc/sysctl.conf and add: # We need to increase the file handler limit of the linux distro
       - fs.inotify.max_user_watches = 1048576
       - fs.inotify.max_user_instances = 512
-  - colima restart dns1
+      - install the dnsutils package for the demo later to have dig
+  - colima restart dns
 - docker cli: brew install docker
 - kind: brew install kind
 
