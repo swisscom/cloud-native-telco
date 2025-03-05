@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pdns-deployment
+  namespace: dns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pdns
+  template:
+    metadata:
+      labels:
+        app: pdns
+    spec:
+      containers:
+      - name: pdns
+        image: powerdns/pdns-auth-49
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PDNS_AUTH_API_KEY
+          value: "auth_key"
+        ports:
+        - name: dns-udp
+          containerPort: 53
+          protocol: UDP
+        - name: dns-tcp
+          containerPort: 53
+          protocol: TCP
+        - name: api
+          containerPort: 8081
+          protocol: TCP
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0

@@ -1,0 +1,109 @@
+---
+# source https://github.com/kubernetes-sigs/external-dns/blob/master/charts/external-dns/values.yaml
+image:
+  repository: bitnami/external-dns
+  # Overrides the image tag whose default is v{{ .Chart.AppVersion }}
+  tag: "0.14.2"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+serviceMonitor:
+  enabled: false
+
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 2
+  successThreshold: 1
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+service:
+  port: 7979
+  annotations: {}
+
+logLevel: info
+logFormat: json
+
+interval: 30s    # The interval for DNS updates.
+triggerLoopOnEvent: true
+
+
+sources:
+  - service
+  - ingress
+#  - istio-gateway
+#  - istio-virtualservice
+  - crd
+
+policy: sync  # to allow as well the deletion of DNS entries
+
+# Specifies the registry for storing ownership and labels.
+# Valid values are "aws-sd", "noop", "dynamodb", and "txt".
+registry: txt
+# When using a registry other than "noop", specifies a name that
+# uniquely identifies this instance of external-dns.
+txtOwnerId: "dns-"
+# Specifies a prefix for the domain names of TXT records created by the "txt" registry. Optional. Mutually exclusive with `txtSuffix`.
+txtPrefix: "demo-"
+# Specifies a suffix for the domain names of TXT records created by the "txt" registry. Optional. Mutually exclusive with `txtPrefix`.
+txtSuffix: ""
+
+provider: pdns
+
+pdns:
+  apiUrl: http://pdns-service.default.svc.cluster.local
+  apiPort: 8081
+  apiKey: "auth_key"
+
+extraVolumes:
+  - name: init-create-pdns-zones-script
+    configMap:
+      name: init-create-pdns-zones-script
+      defaultMode: 0777
+
+
+initContainers:
+  - name: init-create-pdns-zones
+    image: bash:latest
+    imagePullPolicy: IfNotPresent
+    env:
+      # List of DNS Zones to create
+      # no dashes in variable name
+      - name: DOMAINS
+        value: "5gc.3gppnetwork.org."
+      # PowerDNS configuration
+      - name: POWERDNS_SERVER
+        value: "http://pdns-service.default.svc.cluster.local:8081"
+      - name: POWERDNS_API_KEY
+        value: "auth_key"
+      # set to true if you want debug prints from the startup script
+      - name: DEBUG
+        value: "true"
+    command: ["/usr/local/bin/bash", "-c"]
+    args:
+      - |
+        # Execute this script
+        /scripts/add_dns_zones.sh
+    volumeMounts:
+      - name: init-create-pdns-zones-script
+        mountPath: /scripts

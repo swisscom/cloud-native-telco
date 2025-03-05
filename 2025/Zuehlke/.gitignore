@@ -1,0 +1,5 @@
+demo-1-external-dns/demo-1
+demo-2-forwarding/demo-2
+demo-3-multi-cluster-dns/demo-3
+tmp/*
+.DS_Store
