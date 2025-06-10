@@ -6,15 +6,16 @@
 
 Before the demo, execute the prepare-demo3.sh script in the parent folder.
 
-### Show kind clusters
+## Auto Demo
+
+This demo is using https://github.com/saschagrunert/demo, so to run the demo execute first the build command and then start the demo-3 exec with the -l flag. For more options see -h:
+
 ```
-kind get clusters
+go build .
+./demo-3 -l
 ```
 
-### show pods in cluster 1
-```
-kubectl --context kind-dns-0 -n dns get po
-```
+## Manual Demo
 
 ### Show logs of externalDNS-1 deployment
 ```
@@ -67,21 +68,6 @@ kubectl --context kind-dns-0 -n dns scale deployment pdns-deployment --replicas=
 kubectl --context kind-dns-0 exec -it dnsutils -- nslookup nginx.5gc.3gppnetwork.org
 ```
 
-### Try lookup nginx in cluster 0 in powerDNS
-```
-kubectl --context kind-dns-0 exec -it dnsutils -- nslookup nginx.5gc.3gppnetwork.org 10.96.0.12
-```
-
-### Show coredns cm in cluster 0 to see forwarding
-```
-kubectl --context kind-dns-0 get cm/coredns -n dns -o yaml
-```
-
-### Lookup nginx in cluster 0 pointing to lb of cluster 1
-```
-kubectl --context kind-dns-0 exec -it dnsutils -- nslookup nginx.5gc.3gppnetwork.org 172.18.2.0
-```
-
 ### Apply endpoint3 to cluster 0
 ```
 kubectl --context kind-dns-0 apply -f dns-endpoint-cr-3.yaml
@@ -120,9 +106,4 @@ kubectl --context kind-dns-0 -n dns scale deployment pdns-deployment --replicas=
 ### Show logs of externalDNS-0 deployment in cluster 0
 ```
 kubectl --context kind-dns-0 -n dns logs deploy/external-dns-0
-```
-
-### Scale up coredns deployment to 1 in cluster 0
-```
-kubectl --context kind-dns-0 -n dns scale deployment coredns --replicas=1
 ```

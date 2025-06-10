@@ -1,0 +1,38 @@
+---
+image:
+  pullPolicy: IfNotPresent
+
+rbac:
+  create: true
+
+isClusterService: true
+
+service:
+  clusterIP: 10.96.0.11
+
+
+servers:
+  - zones:
+      - zone: .
+    port: 53
+    plugins:
+      - name: errors
+      # Serves a /health endpoint on :8080, required for livenessProbe
+      - name: health
+        configBlock: |-
+          lameduck 5s
+      # Serves a /ready endpoint on :8181, required for readinessProbe
+      - name: ready
+      # Serves a /metrics endpoint on :9153, required for serviceMonitor
+      - name: prometheus
+        parameters: 0.0.0.0:9153
+      - name: loop
+      - name: reload
+      - name: loadbalance
+      # IMPORTANT: order of forwards is important
+      - name: forward
+        parameters: 5gc.3gppnetwork.org. 10.96.0.12 172.18.2.1 172.18.3.1
+        configBlock: |-
+          policy sequential
+      - name: forward
+        parameters: . 1.1.1.1

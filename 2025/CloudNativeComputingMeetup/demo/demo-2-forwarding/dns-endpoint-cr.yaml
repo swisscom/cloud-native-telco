@@ -6,6 +6,6 @@ spec:
   endpoints:
   - dnsName: endpoint1.5gc.3gppnetwork.org
     recordTTL: 1
-    recordType: CNAME
+    recordType: A
     targets:
-    - target1.swisscom.com
+    - 192.111.111.111

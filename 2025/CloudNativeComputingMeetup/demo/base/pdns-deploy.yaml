@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: pdns
-        image: powerdns/pdns-auth-49
+        image: powerdns/pdns-auth-49:4.9.4
         imagePullPolicy: IfNotPresent
         env:
         - name: PDNS_AUTH_API_KEY

@@ -3,7 +3,7 @@
 image:
   repository: bitnami/external-dns
   # Overrides the image tag whose default is v{{ .Chart.AppVersion }}
-  tag: "0.14.2"
+  tag: "0.16.1"
   pullPolicy: IfNotPresent
 
 serviceAccount:
@@ -62,7 +62,7 @@ policy: sync  # to allow as well the deletion of DNS entries
 registry: txt
 # When using a registry other than "noop", specifies a name that
 # uniquely identifies this instance of external-dns.
-txtOwnerId: "dns-"
+txtOwnerId: "dns-2"
 # Specifies a prefix for the domain names of TXT records created by the "txt" registry. Optional. Mutually exclusive with `txtSuffix`.
 txtPrefix: "demo-"
 # Specifies a suffix for the domain names of TXT records created by the "txt" registry. Optional. Mutually exclusive with `txtPrefix`.
@@ -71,7 +71,7 @@ txtSuffix: ""
 provider: pdns
 
 pdns:
-  apiUrl: http://pdns-service.default.svc.cluster.local
+  apiUrl: http://pdns-service.dns.svc.cluster.local
   apiPort: 8081
   apiKey: "auth_key"
 
@@ -93,7 +93,7 @@ initContainers:
         value: "5gc.3gppnetwork.org."
       # PowerDNS configuration
       - name: POWERDNS_SERVER
-        value: "http://pdns-service.default.svc.cluster.local:8081"
+        value: http://pdns-service.dns.svc.cluster.local:8081
       - name: POWERDNS_API_KEY
         value: "auth_key"
       # set to true if you want debug prints from the startup script
