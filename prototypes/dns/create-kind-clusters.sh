@@ -44,6 +44,7 @@ do
       continue
     fi
     kind create cluster --name $clustername-$i --config $temp_config || { echo -e "${RED}Error: Failed to create cluster ${clustername}-${i}${NC}"; rm -f "$temp_config"; exit 1; }
+    kubectl -n kube-system wait deployment coredns --for condition=Available=True --timeout=300s
 
   else
     echo -e "${RED}Error: Configuration file $config_file not found${NC}"
