@@ -84,7 +84,7 @@ extraVolumes:
 
 initContainers:
   - name: init-create-pdns-zones
-    image: bash:latest
+    image: ubuntu
     imagePullPolicy: IfNotPresent
     env:
       # List of DNS Zones to create
@@ -99,7 +99,7 @@ initContainers:
       # set to true if you want debug prints from the startup script
       - name: DEBUG
         value: "true"
-    command: ["/usr/local/bin/bash", "-c"]
+    command: ["/bin/bash", "-c"]
     args:
       - |
         # Execute this script

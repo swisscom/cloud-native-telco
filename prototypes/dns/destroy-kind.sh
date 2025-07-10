@@ -30,7 +30,7 @@ do
   cluster_to_delete="${clusternameprefix}-$i"
   
   # Attempt to delete the cluster
-  kind delete cluster --name $cluster_to_delete || { echo -e "${RED}Error: Failed to delete cluster ${cluster_to_delete}${NC}"; exit 1; }
+  kind delete cluster --name $cluster_to_delete || { echo -e "${RED}Error: Failed to delete cluster ${cluster_to_delete}${NC}"; }
   
   echo "Successfully deleted cluster: $cluster_to_delete"
   ((i++))

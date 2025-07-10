@@ -21,7 +21,7 @@ data:
 
     script="$(basename "${0}")"
     echo "[${script}] Starting..."
-    apk add --no-cache curl
+    apt update && apt -y install curl
 
     for domain in ${DOMAINS//,/ }
       do
