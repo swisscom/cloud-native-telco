@@ -75,20 +75,7 @@ pull_image_if_not_exists nginx "latest"
 kind load docker-image nginx:latest --name $clustername
 
 # Wait for the controller deployment to be ready
-DEPLOYMENT_NAME="controller"
-NAMESPACE="metallb-system"
-while true; do
-  READY_REPLICAS=$(kubectl --context kind-$clustername get deployment $DEPLOYMENT_NAME -n $NAMESPACE -o jsonpath='{.status.readyReplicas}')
-  DESIRED_REPLICAS=$(kubectl --context kind-$clustername get deployment $DEPLOYMENT_NAME -n $NAMESPACE -o jsonpath='{.status.replicas}')
-
-  if [[ "$READY_REPLICAS" == "$DESIRED_REPLICAS" ]] && [[ "$READY_REPLICAS" -gt 0 ]]; then
-    echo "Deployment $DEPLOYMENT_NAME is ready."
-    break
-  else
-    echo "Waiting... Ready replicas: $READY_REPLICAS / $DESIRED_REPLICAS"
-    sleep 5
-  fi
-done
+kubectl --context kind-$clustername wait deployment/controller -n metallb-system --for=condition=Available --timeout=120s
 
 sleep 5
 
@@ -147,7 +134,7 @@ for cluster in $clusters; do
     rm "$tmp_config"-e
   fi
 
-  RELEASE_NAME=external-dns-$cluster_i
+  RELEASE_NAME=external-dns-$cluster_id
   helm upgrade --install --namespace $ns --kube-context kind-$clustername $RELEASE_NAME oci://registry-1.docker.io/bitnamicharts/external-dns --version $external_dns_chart_version -f $tmp_config --set txtOwnerId=$clustername-
   # Create a rolebinding for the external-dns service account to allow read of the dnsendpoints crd if it does not exist
   if kubectl --context kind-$clustername get clusterrolebinding dnsendpoint-read-binding-$cluster_id >/dev/null 2>&1; then

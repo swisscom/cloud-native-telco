@@ -6,15 +6,6 @@
 
 Before the demo, execute the prepare-demo2.sh script in the parent folder.
 
-## Auto Demo
-
-This demo is using https://github.com/saschagrunert/demo, so to run the demo execute first the build command and then start the demo-2 exec with the -l flag. For more options see -h:
-
-```
-go build .
-./demo-2 -l
-```
-## Manual Demo
 
 ### List pods
 
@@ -49,7 +40,7 @@ kubectl exec -it dnsutils -- dig +noall +answer nginx.5gc.3gppnetwork.org
 ### Nslookup endpoint1 using default dns
 
 ```
-kubectl exec -it dnsutils -- nslookup endpoint1.5gc.3gppnetwork.org
+kubectl exec -it dnsutils -- dig +noall +answer endpoint1.5gc.3gppnetwork.org
 ```
 
 ### Dig nginx service from local machine using coredns loadbalancer ip
