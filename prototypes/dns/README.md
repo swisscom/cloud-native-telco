@@ -61,3 +61,10 @@ The setup script accepts the cluster id and an optional clusternameprefix parame
 
 To teardown the kind clusters simply execute:
 ./destroy-kind.sh 2
+
+### Check MariaDB Records:
+- Get DB root password: `kubectl get secret --namespace dns mariadb -o jsonpath="{.data.mariadb-root-password}" | base64 -d`
+- Connect to mariadb pod and execute `mariadb -uroot -p`
+- `SHOW DATABASES;`
+- `USE powerdns;`
+- `SHOW Tables;`
