@@ -15,11 +15,19 @@ spec:
     spec:
       containers:
       - name: pdns
+        args: # From dmc
+          - --gmysql-password=$(MARIADB_PASS)
+        #  - --api-key=$(POWERDNS_API_KEY)
         image: powerdns/pdns-auth-49:4.9.4
         imagePullPolicy: IfNotPresent
         env:
         - name: PDNS_AUTH_API_KEY
           value: "auth_key"
+        - name: MARIADB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: mariadb
+              key: mariadb-root-password # Check which key needs to be used for powerdns user
         ports:
         - name: dns-udp
           containerPort: 53
@@ -33,3 +41,17 @@ spec:
         securityContext:
           runAsUser: 0
           runAsGroup: 0
+        readinessProbe:
+          httpGet:
+            path: /
+            port: api
+        volumeMounts:
+        - name: pdns-config-volume
+          mountPath: /etc/powerdns/pdns.conf
+          subPath: pdns.conf
+          readOnly: true
+      volumes:
+        - name: pdns-config-volume
+          configMap:
+            name: pdns-config
+

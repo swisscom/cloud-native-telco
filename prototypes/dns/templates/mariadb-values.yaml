@@ -19,6 +19,7 @@ architecture: standalone
 auth:
   username: powerdns
   database: powerdns
+  #password: "newUserPassword123"
 
 primary:
   name: master
