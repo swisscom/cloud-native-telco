@@ -136,6 +136,7 @@ for cluster in $clusters; do
 
   RELEASE_NAME=external-dns-$cluster_id
   helm upgrade --install --namespace $ns --kube-context kind-$clustername $RELEASE_NAME oci://registry-1.docker.io/bitnamicharts/external-dns --version $external_dns_chart_version -f $tmp_config --set txtOwnerId=$clustername-
+  # helm install --namespace $ns --kube-context kind-$clustername mariadb oci://registry-1.docker.io/bitnamicharts/mariadb -f $tmp_config_mariadb
   # Create a rolebinding for the external-dns service account to allow read of the dnsendpoints crd if it does not exist
   if kubectl --context kind-$clustername get clusterrolebinding dnsendpoint-read-binding-$cluster_id >/dev/null 2>&1; then
     echo "ClusterRoleBinding 'dnsendpoint-read-binding-$cluster_id' already exists. Skipping creation."
@@ -144,6 +145,9 @@ for cluster in $clusters; do
     kubectl --context kind-$clustername create clusterrolebinding dnsendpoint-read-binding-$cluster_id --namespace=dns --clusterrole=dnsendpoint-read --serviceaccount=dns:external-dns-$cluster_id
   fi
 done
+
+# Install mariadb
+helm install --namespace $ns --kube-context kind-$clustername mariadb oci://registry-1.docker.io/bitnamicharts/mariadb -f ./templates/mariadb-values.yaml
 
 # Install CoreDNS
 values_file="templates/core-dns-values.yaml"
