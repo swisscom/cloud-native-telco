@@ -75,20 +75,7 @@ pull_image_if_not_exists nginx "latest"
 kind load docker-image nginx:latest --name $clustername
 
 # Wait for the controller deployment to be ready
-DEPLOYMENT_NAME="controller"
-NAMESPACE="metallb-system"
-while true; do
-  READY_REPLICAS=$(kubectl --context kind-$clustername get deployment $DEPLOYMENT_NAME -n $NAMESPACE -o jsonpath='{.status.readyReplicas}')
-  DESIRED_REPLICAS=$(kubectl --context kind-$clustername get deployment $DEPLOYMENT_NAME -n $NAMESPACE -o jsonpath='{.status.replicas}')
-
-  if [[ "$READY_REPLICAS" == "$DESIRED_REPLICAS" ]] && [[ "$READY_REPLICAS" -gt 0 ]]; then
-    echo "Deployment $DEPLOYMENT_NAME is ready."
-    break
-  else
-    echo "Waiting... Ready replicas: $READY_REPLICAS / $DESIRED_REPLICAS"
-    sleep 5
-  fi
-done
+kubectl --context kind-$clustername wait deployment/controller -n metallb-system --for=condition=Available --timeout=120s
 
 sleep 5
 
@@ -106,8 +93,20 @@ cp "$pool_file" "$tmp_config"
 # Modify ip pool in the copied config file depending on cluster id
 pool_id=$((this_cluster_id + 1))
 echo "Modifying ip pool in the copied config file to 172.18.$pool_id.0/24"
-sed -i'' -e "s|    - 172.18.1.0/24|    - 172.18.$pool_id.0/24|g" "$tmp_config"
-rm "$tmp_config"-e
+
+# Cross-platform in-place sed (GNU vs BSD)
+sed_inplace() {
+  local expr=$1 file=$2
+  if sed --version >/dev/null 2>&1; then
+    # GNU sed (Linux)
+    sed -E -i -e "$expr" "$file"
+  else
+    # BSD sed (macOS)
+    sed -E -i '' -e "$expr" "$file"
+  fi
+}
+
+sed_inplace "s|[[:space:]]*- 172\.18\.1\.0/24|    - 172.18.$pool_id.0/24|g" "$tmp_config"
 
 # Apply the ip pool configuration
 kubectl apply -f $tmp_config --context kind-$clustername
@@ -127,27 +126,22 @@ for cluster in $clusters; do
   cp "$values_file" "$tmp_config"
 
   # Modify txtOwnerId in the copied config file for each external-dns instance
-  sed -i'' -e "s|txtOwnerId: \"dns-\"|txtOwnerId: \"dns-$cluster_id\"|g" "$tmp_config"
-  rm "$tmp_config"-e
+  sed_inplace "s|txtOwnerId: \"dns-\"|txtOwnerId: \"dns-$cluster_id\"|g" "$tmp_config"
 
   if [ "$cluster_id" != "$this_cluster_id" ]; then
     # Modify ip in the copied config file with the loadbalancer ip of the pdns service from the other clusters
     echo "Modifying apiServerPort in the copied config file and the namespace is $ns"
     ipv4_address=$(kubectl --context kind-dns-$cluster_id get svc pdns-ext-service -n dns -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-    sed -i'' -e "s|value: \"http://pdns-service.default.svc.cluster.local:8081\"|value: http://$ipv4_address:8081|g" "$tmp_config"
-    rm "$tmp_config"-e
-    sed -i'' -e "s|apiUrl: http://pdns-service.default.svc.cluster.local|apiUrl: http://$ipv4_address|g" "$tmp_config"
-    rm "$tmp_config"-e
+    sed_inplace "s|value: \"http://pdns-service.default.svc.cluster.local:8081\"|value: http://$ipv4_address:8081|g" "$tmp_config"
+    sed_inplace "s|apiUrl: http://pdns-service.default.svc.cluster.local|apiUrl: http://$ipv4_address|g" "$tmp_config"
   else
     # Modify ip in the copied config file with the loadbalancer ip of the pdns service from this cluster
     echo "Modifying apiServerPort in the copied config file and the namespace is $ns"
-    sed -i'' -e "s|value: \"http://pdns-service.default.svc.cluster.local:8081\"|value: http://pdns-service.$ns.svc.cluster.local:8081|g" "$tmp_config"
-    rm "$tmp_config"-e
-    sed -i'' -e "s|apiUrl: http://pdns-service.default.svc.cluster.local|apiUrl: http://pdns-service.$ns.svc.cluster.local|g" "$tmp_config"
-    rm "$tmp_config"-e
+    sed_inplace "s|value: \"http://pdns-service.default.svc.cluster.local:8081\"|value: http://pdns-service.$ns.svc.cluster.local:8081|g" "$tmp_config"
+    sed_inplace "s|apiUrl: http://pdns-service.default.svc.cluster.local|apiUrl: http://pdns-service.$ns.svc.cluster.local|g" "$tmp_config"
   fi
 
-  RELEASE_NAME=external-dns-$cluster_i
+  RELEASE_NAME=external-dns-$cluster_id
   helm upgrade --install --namespace $ns --kube-context kind-$clustername $RELEASE_NAME oci://registry-1.docker.io/bitnamicharts/external-dns --version $external_dns_chart_version -f $tmp_config --set txtOwnerId=$clustername-
   # Create a rolebinding for the external-dns service account to allow read of the dnsendpoints crd if it does not exist
   if kubectl --context kind-$clustername get clusterrolebinding dnsendpoint-read-binding-$cluster_id >/dev/null 2>&1; then
@@ -180,10 +174,8 @@ echo "all_ips is: $all_ips"
 
 # Inject all IPs after 10.96.0.12 but before /etc/resolv.conf
 # sed -i '' -E "/parameters: 5gc.3gppnetwork.org. 10.96.0.12 / s#(10\.96\.0\.12)([[:space:]]+/etc/resolv\.conf)#\1 $all_ips\2#" "$tmp_config"
-# rm -f "$tmp_config"-e
 
-sed -i'' -e "/parameters: 5gc.3gppnetwork.org. 10.96.0.12/ s/$/ $all_ips/" "$tmp_config"
-rm "$tmp_config"-e
+sed_inplace "/parameters: 5gc.3gppnetwork.org. 10.96.0.12/ s/$/ $all_ips/" "$tmp_config"
 
 echo "tmp_config: $tmp_config"
 
@@ -211,7 +203,9 @@ for cluster in $clusters; do
 done
 all_ips="$(echo $all_ips | xargs)" # trim leading/trailing whitespace
 
-sed -i '' -E "/^[[:space:]]*forward[[:space:]]+\.[[:space:]]+10\.96\.0\.11 .*\/etc\/resolv\.conf/ s#(10\.96\.0\.11)([[:space:]]+/etc/resolv\.conf)#\1 $all_ips\2#" "$tmp_config"
+echo "all ips: $all_ips"
+
+sed_inplace "/^[[:space:]]*forward[[:space:]]+\.[[:space:]]+10\.96\.0\.11 .*\/etc\/resolv\.conf/ s#(10\.96\.0\.11)([[:space:]]+/etc/resolv\.conf)#\1 $all_ips\2#" "$tmp_config"
 
 #for cluster in $clusters; do
 #  cluster_id=${cluster: -1}
@@ -225,7 +219,6 @@ sed -i '' -E "/^[[:space:]]*forward[[:space:]]+\.[[:space:]]+10\.96\.0\.11 .*\/e
 # Append that IP right after 10.96.0.11 but before /etc/resolv.conf
 # – keeps the spacing intact and is safe for GNU *and* BSD sed.
 # sed -i'' -e "/forward: . 10.96.0.11/ s/$/ $ipv4_address/" "$tmp_config"
-# rm "$tmp_config"-e
 #    tmp_out=$(mktemp)
 #    awk -v ip="$ipv4_address" '
 # Look for a line containing "forward . 10.96.0.11" and " /etc/resolv.conf"
