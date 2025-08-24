@@ -30,10 +30,10 @@ kubectl get pods -n dns
 cat some-svc.yaml
 ```
 
-### 3. Apply some-svc.yaml
+### 3. Apply svc.yaml
 
 ```
-kubectl apply -f some-svc.yaml
+kubectl apply -f svc.yaml
 ```
 
 ### 4. Check ExternalDNS logs
@@ -54,9 +54,9 @@ kubectl exec -it dnsutils -- dig +noall +answer nginx.5gc.3gppnetwork.org @10.96
 cat dns-endpoint-cr.yaml
 ```
 
-### 7. Apply some-dns-endpoint-cr.yaml
+### 7. Apply dns-endpoint-cr.yaml
 ```
-kubectl --context apply -f dns-endpoint-cr.yaml
+kubectl apply -f dns-endpoint-cr.yaml
 ```
 
 ### 4. Check ExternalDNS logs

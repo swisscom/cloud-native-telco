@@ -37,7 +37,7 @@ kubectl describe cm/coredns -n kube-system
 kubectl exec -it dnsutils -- dig +noall +answer nginx.5gc.3gppnetwork.org
 ```
 
-### Nslookup endpoint1 using default dns
+### Dig endpoint1 using default dns
 
 ```
 kubectl exec -it dnsutils -- dig +noall +answer endpoint1.5gc.3gppnetwork.org

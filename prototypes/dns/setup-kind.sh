@@ -40,39 +40,79 @@ echo "Setting up cluster '$clustername'..."
 # Install Metallb
 kubectl --context kind-$clustername apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.8/config/manifests/metallb-native.yaml
 
-# Pull and load needed docker images into kind cluster
+# Pull & load images into kind nodes (platform-correct, no --all-platforms)
 pull_image_if_not_exists() {
   local image=$1
   local version=$2
-  if ! docker image list | grep $image | grep $version; then
-    docker pull "$image:$version"
+  if ! docker image list --format '{{.Repository}}:{{.Tag}}' | grep -q "^${image}:${version}$"; then
+    docker pull "${image}:${version}"
   else
-    echo "Image $image already exists locally. Skipping pull."
+    echo "Image ${image}:${version} already exists locally. Skipping host pull."
   fi
 }
 
+# Detect nodes & platform
+# mapfile -t NODES < <(kind get nodes --name "$clustername")
+NODES=()
+while IFS= read -r node; do
+  NODES+=("$node")
+done < <(kind get nodes --name "$clustername")
+
+if [ ${#NODES[@]} -eq 0 ]; then
+  echo -e "${RED}No nodes found for cluster ${clustername}.${NC}"
+  exit 1
+fi
+
+# Use the first node to detect arch
+NODE_ARCH=$(docker exec "${NODES[0]}" uname -m)
+case "$NODE_ARCH" in
+  aarch64|arm64)   PLATFORM="linux/arm64" ;;
+  x86_64|amd64)    PLATFORM="linux/amd64" ;;
+  *)               PLATFORM="linux/${NODE_ARCH}";;
+esac
+echo "Detected node arch: ${NODE_ARCH} -> using --platform ${PLATFORM}"
+
+# Load one image ref into all nodes via containerd
+load_into_kind_nodes() {
+  local ref="$1"   # e.g. coredns/coredns:1.12.0
+  for node in "${NODES[@]}"; do
+    # Fast-path: skip if present
+    if docker exec "$node" ctr -n k8s.io images ls | awk '{print $1}' | grep -q "^${ref}$"; then
+      echo "[$node] already has ${ref}"
+      continue
+    fi
+    echo "[$node] pulling ${ref} into containerd (${PLATFORM})…"
+    # Note: we don’t use --all-platforms; only the node’s platform
+    if ! docker exec "$node" ctr -n k8s.io images pull --platform "${PLATFORM}" "${ref}"; then
+      echo -e "${RED}[$node] failed to pull ${ref} for ${PLATFORM}.${NC}"
+      echo "Tip: some images are not built for ${PLATFORM}. Use a multi-arch alternative."
+      return 1
+    fi
+  done
+}
+
+# ---- declare versions ----
 core_dns_chart_version="1.40.0"
-pull_image_if_not_exists coredns/coredns "1.12.0"
-kind load docker-image coredns/coredns:1.12.0 --name $clustername
-
-pull_image_if_not_exists infoblox/dnstools "latest"
-kind load docker-image infoblox/dnstools:latest --name $clustername
-
-pull_image_if_not_exists registry.k8s.io/e2e-test-images/jessie-dnsutils 1.3
-kind load docker-image registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3 --name $clustername
-
-pull_image_if_not_exists powerdns/pdns-auth-49 "4.9.4"
-kind load docker-image powerdns/pdns-auth-49:4.9.4 --name $clustername
-
 external_dns_chart_version="8.8.0"
+
+# ---- ensure images exist on host (optional) ----
+pull_image_if_not_exists coredns/coredns "1.12.0"
+pull_image_if_not_exists infoblox/dnstools "latest"
+pull_image_if_not_exists registry.k8s.io/e2e-test-images/jessie-dnsutils "1.3"
+pull_image_if_not_exists powerdns/pdns-auth-49 "4.9.4"
 pull_image_if_not_exists bitnami/external-dns "0.16.1"
-kind load docker-image bitnami/external-dns:0.16.1 --name $clustername
-
 pull_image_if_not_exists bash "latest"
-kind load docker-image bash:latest --name $clustername
-
 pull_image_if_not_exists nginx "latest"
-kind load docker-image nginx:latest --name $clustername
+
+# ---- load into nodes (platform-correct) ----
+load_into_kind_nodes "docker.io/coredns/coredns:1.12.0"
+load_into_kind_nodes "docker.io/infoblox/dnstools:latest" || echo -e "${RED}infoblox/dnstools may not have ${PLATFORM}. Consider ghcr.io/dns-tool/dnsutils or praqma/network-multitool.${NC}"
+load_into_kind_nodes "registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3" || echo -e "${RED}jessie-dnsutils may not have ${PLATFORM}. Consider ghcr.io/infisical/dnsutils or alpine:latest + bind-tools.${NC}"
+load_into_kind_nodes "docker.io/powerdns/pdns-auth-49:4.9.4" || echo -e "${RED}powerdns/pdns-auth-49 may not have ${PLATFORM}.${NC}"
+load_into_kind_nodes "docker.io/bitnami/external-dns:0.16.1"
+load_into_kind_nodes "docker.io/library/bash:latest"
+load_into_kind_nodes "docker.io/library/nginx:latest"
+
 
 # Wait for the controller deployment to be ready
 kubectl --context kind-$clustername wait deployment/controller -n metallb-system --for=condition=Available --timeout=120s
