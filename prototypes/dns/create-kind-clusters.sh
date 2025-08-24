@@ -24,6 +24,22 @@ number_of_clusters=$1
 clustername=${2:-dns}  # Set default cluster name to 'dns' if not provided
 mkdir -p tmp
 
+# Cross-platform in-place sed (GNU vs BSD)
+sed_inplace() {
+  local expr=$1 file=$2
+  if command -v gsed >/dev/null 2>&1; then
+    # Prefer gsed if installed (macOS via Homebrew)
+    gsed -i -e "$expr" "$file"
+  elif sed --version >/dev/null 2>&1; then
+    # GNU sed (Linux, Arch, etc.)
+    sed -i -e "$expr" "$file"
+  else
+    # BSD sed (macOS default)
+    sed -i '' -e "$expr" "$file"
+  fi
+}
+
+
 # Loop to create the specified number of clusters
 for (( i=0; i<$number_of_clusters; i++ ))
 do
@@ -34,9 +50,8 @@ do
     # Make a temporary copy of the configuration file
     cp "$config_file" "$temp_config"
 
-    # Modify apiServerPort in the copied config file
-    sed -i'' -e "s/apiServerPort: 6443/apiServerPort: $((6443 + i))/g" "$temp_config"
-    rm "$temp_config"-e
+    # Example usage: change apiServerPort
+    sed_inplace "s/apiServerPort: 6443/apiServerPort: $((6443 + i))/g" "$temp_config"
 
     # check if cluster exists
     if kind get clusters | grep -q "^${clustername}-${i}$"; then
