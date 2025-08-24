@@ -8,7 +8,9 @@ SCRIPT_DIR=$(dirname "$0")
 # Create 2 kind clusters
 "$SCRIPT_DIR/create-kind-clusters.sh" 2
 
-kubectl --context kind-dns-1 wait deployment/coredns -n kube-system --for=condition=Available --timeout=120s
+kubectl --context kind-dns-0 -n kube-system wait deployment coredns --for condition=Available=True --timeout=300s
+kubectl --context kind-dns-1 -n kube-system wait deployment coredns --for condition=Available=True --timeout=300s
+kubectl --context kind-dns-2 -n kube-system wait deployment coredns --for condition=Available=True --timeout=300s
 
 # Deploy the multicluster dns in all 2 clusters
 "$SCRIPT_DIR/setup-kind.sh" 0

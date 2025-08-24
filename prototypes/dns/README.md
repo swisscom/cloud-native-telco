@@ -21,16 +21,17 @@ For docker engine / virtualization we use [colima](https://github.com/abiosoft/c
 
 ## Prerequisites
 
-- colima:
-  - brew install colima
-  - colima start dns1 -c 4 -m 4 --network-address
-  - colima ssh -p dns1 # ssh onto colima node
-    - edit /etc/sysctl.conf and add: # We need to increase the file handler limit of the linux distro
-      - fs.inotify.max_user_watches = 1048576
-      - fs.inotify.max_user_instances = 512
-  - colima restart dns1
-- docker cli: brew install docker
-- kind: brew install kind
+```bash
+brew install colima docker kind
+colima start dns -c 4 -m 4 --network-address
+colima ssh -p dns # ssh onto colima node
+sudo -i
+echo "fs.inotify.max_user_watches = 1048576" >> /etc/sysctl.conf
+echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
+apt update && apt install -y dnsutils
+colima restart dns
+export DOCKER_HOST=unix:///Users/joel/.colima/local/docker.sock
+```
 
 ## Demo Environment setup
 
