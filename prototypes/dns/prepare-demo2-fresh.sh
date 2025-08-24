@@ -9,6 +9,6 @@ SCRIPT_DIR=$(dirname "$0")
 # Create 1 kind clusters
 "$SCRIPT_DIR/create-kind-clusters.sh" 1
 
-kubectl --context kind-dns-0 wait deployment/coredns -n kube-system --for=condition=Available --timeout=120s
+kubectl --context kind-zurich wait deployment/coredns -n kube-system --for=condition=Available --timeout=120s
 
-"$SCRIPT_DIR/setup-kind.sh" 0
+"$SCRIPT_DIR/setup-kind.sh" zurich
