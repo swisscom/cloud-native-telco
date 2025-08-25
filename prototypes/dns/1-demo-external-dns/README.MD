@@ -4,18 +4,7 @@
 
 ## Demo Preparation
 
-Before the demo, execute the prepare-demo1.sh script in the parent folder.
-
-## Auto Demo
-
-This demo can be run using https://github.com/saschagrunert/demo, execute first the build command and then start the demo-1 exec with the -l flag. For more options see -h:
-
-```
-go build .
-./demo-1 -l
-```
-
-## Manual Demo
+Before the demo, execute make demo1 in the parent folder.
 
 
 ### 1. Show pods

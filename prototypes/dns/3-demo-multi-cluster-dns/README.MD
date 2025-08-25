@@ -83,9 +83,9 @@ kubectl --context kind-zurich -n dns scale deployment forwarder-coredns --replic
 kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 ```
 
-### Scale down powerDNS deployment to 0 in berne
+### Scale down coredns forwarder deployment to 0 in berne
 ```
-kubectl --context kind-berne -n dns scale deployment pdns-deployment --replicas=0
+kubectl --context kind-berne -n dns scale deployment forwarder-coredns --replicas=0
 ```
 
 ### Lookup google.com in zurich
@@ -93,9 +93,9 @@ kubectl --context kind-berne -n dns scale deployment pdns-deployment --replicas=
 kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer google.com
 ```
 
-### Scale up powerDNS deployment to 1 in berne
+### Scale up coredns forwarder deployment to 1 in berne
 ```
-kubectl --context kind-berne -n dns scale deployment pdns-deployment --replicas=1
+kubectl --context kind-berne -n dns scale deployment forwarder-coredns --replicas=1
 ```
 
 ### Show logs of externalDNS-berne deployment in berne
