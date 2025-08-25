@@ -21,7 +21,7 @@ if ! [[ "$1" =~ $re ]]; then
 fi
 
 number_of_clusters="$1"
-CITIES=(zurich berne lausanne)
+CITIES=(berne zurich lausanne)
 MAX="${#CITIES[@]}"
 
 if [ "$number_of_clusters" -lt 1 ] || [ "$number_of_clusters" -gt "$MAX" ]; then
@@ -44,7 +44,7 @@ sed_inplace() {
 }
 
 # Create the requested clusters
-for (( i=0; i<number_of_clusters; i++ )); do
+for ((i = 0; i < number_of_clusters; i++)); do
   city="${CITIES[$i]}"
   config_file="templates/cluster-cfg.yaml"
   temp_config="tmp/cluster-${city}-cfg.yaml"
@@ -77,4 +77,3 @@ for (( i=0; i<number_of_clusters; i++ )); do
   kubectl --context "kind-${city}" -n kube-system \
     wait deployment/coredns --for=condition=Available --timeout=300s
 done
-

@@ -9,10 +9,10 @@ SCRIPT_DIR=$(dirname "$0")
 # Create 1 kind clusters
 "$SCRIPT_DIR/create-kind-clusters.sh" 1
 
-kubectl --context kind-zurich wait deployment/coredns -n kube-system --for=condition=Available --timeout=120s
+kubectl --context kind-berne wait deployment/coredns -n kube-system --for=condition=Available --timeout=120s
 
-"$SCRIPT_DIR/setup-kind.sh" zurich
+"$SCRIPT_DIR/setup-kind.sh" berne
 
 # Remove the coredns debloyment in dns namespace for first demo
-helm uninstall --namespace dns --kube-context kind-zurich forwarder
+helm uninstall --namespace dns --kube-context kind-berne forwarder
 # kubectl --context kind-zurich delete deployment coredns -n dns

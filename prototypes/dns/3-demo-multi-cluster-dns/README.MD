@@ -4,22 +4,22 @@
 
 ## Demo Preparation
 
-Before the demo, execute the prepare-demo3.sh script in the parent folder.
+Before the demo, execute make demo3 in the parent folder.
 
 
-### Show logs of externalDNS-berne deployment
+### Show logs of externalDNS-zurich deployment
 ```
-kubectl --context kind-zurich -n dns logs deploy/external-dns-berne
-```
-
-### Lookup nginx in berne
-```
-kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer  nginx.5gc.3gppnetwork.org
+kubectl --context kind-berne -n dns logs deploy/external-dns-zurich
 ```
 
-### Lookup endpoint1 in berne
+### Lookup nginx in zurich
 ```
-kubectl --context kind-berne exec -it dnsutils --  dig +noall +answer  endpoint1.5gc.3gppnetwork.org
+kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer  nginx.5gc.3gppnetwork.org
+```
+
+### Lookup endpoint1 in zurich
+```
+kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer  endpoint1.5gc.3gppnetwork.org
 ```
 
 ### Cat dns-endpoint-cr-2.yaml
@@ -28,39 +28,44 @@ cat dns-endpoint-cr-2.yaml
 ```
 
 
-### Apply endpoint-cr-2 to berne
+### Apply endpoint-cr-2 to zurich
 ```
-kubectl --context kind-berne apply -f dns-endpoint-cr-2.yaml
-```
-
-### Show logs of externalDNS-berne deployment in berne
-```
-kubectl --context kind-berne -n dns logs deploy/external-dns-berne
+kubectl --context kind-zurich apply -f dns-endpoint-cr-2.yaml
 ```
 
-### Show logs of externalDNS-zurich deployment in berne
+### Show logs of externalDNS-zurich deployment in zurich
 ```
-kubectl --context kind-berne -n dns logs deploy/external-dns-zurich
-```
-
-### Lookup endpoint2 in cluster zurich
-```
-kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer  endpoint2.5gc.3gppnetwork.org
+kubectl --context kind-zurich -n dns logs deploy/external-dns-zurich
 ```
 
-### Scale down powerDNS deployment to 0 in zurich
+### Show logs of externalDNS-berne deployment in zurich
 ```
-kubectl --context kind-zurich -n dns scale deployment pdns-deployment --replicas=0
-```
-
-### Lookup nginx in zurich
-```
-kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer nginx.5gc.3gppnetwork.org
+kubectl --context kind-zurich -n dns logs deploy/external-dns-berne
 ```
 
-### Apply endpoint3 to zurich
+### Lookup endpoint2 in cluster berne
 ```
-kubectl --context kind-zurich apply -f dns-endpoint-cr-3.yaml
+kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer  endpoint2.5gc.3gppnetwork.org
+```
+
+### Scale down powerDNS deployment to 0 in berne
+```
+kubectl --context kind-berne -n dns scale deployment pdns-deployment --replicas=0
+```
+
+### Lookup nginx in berne
+```
+kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer nginx.5gc.3gppnetwork.org
+```
+
+### Apply endpoint3 to berne
+```
+kubectl --context kind-berne apply -f dns-endpoint-cr-3.yaml
+```
+
+### Lookup endpoint3 in zurich
+```
+kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 ```
 
 ### Lookup endpoint3 in berne
@@ -68,37 +73,28 @@ kubectl --context kind-zurich apply -f dns-endpoint-cr-3.yaml
 kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 ```
 
-### Lookup endpoint3 in zurich
-```
-kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
-```
-
-### Scale down coredns forwarder deployment to 0 in cluster zurich
-```
-kubectl --context kind-zurich -n dns scale deployment forwarder-coredns --replicas=0
-```
-
-### Lookup endpoint3 in zurich
-```
-kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
-```
-
-### Scale down coredns forwarder deployment to 0 in berne
+### Scale down coredns forwarder deployment to 0 in cluster berne
 ```
 kubectl --context kind-berne -n dns scale deployment forwarder-coredns --replicas=0
 ```
 
-### Lookup google.com in zurich
+### Lookup endpoint3 in berne
 ```
-kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer google.com
-```
-
-### Scale up coredns forwarder deployment to 1 in berne
-```
-kubectl --context kind-berne -n dns scale deployment forwarder-coredns --replicas=1
+kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 ```
 
-### Show logs of externalDNS-berne deployment in berne
+### Scale down coredns forwarder deployment to 0 in zurich
 ```
-kubectl --context kind-berne -n dns logs deploy/external-dns-berne
+kubectl --context kind-zurich -n dns scale deployment forwarder-coredns --replicas=0
 ```
+
+### Lookup google.com in berne
+```
+kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer google.com
+```
+
+### Scale up coredns forwarder deployment to 1 in zurich
+```
+kubectl --context kind-zurich -n dns scale deployment forwarder-coredns --replicas=1
+```
+

@@ -9,17 +9,17 @@ ns=dns
 # ---- input & mapping ----
 if [ -z "${1:-}" ]; then
   echo -e "${RED}Error: City not provided${NC}"
-  echo "Usage: $0 <zurich|berne|lausanne>"
+  echo "Usage: $0 <berne|zurich|lausanne>"
   exit 1
 fi
 
 CITY="$1"
 case "$CITY" in
-zurich) this_cluster_id=0 ;;
-berne) this_cluster_id=1 ;;
+berne) this_cluster_id=0 ;;
+zurich) this_cluster_id=1 ;;
 lausanne) this_cluster_id=2 ;;
 *)
-  echo -e "${RED}Error: city must be one of: zurich, berne, lausanne${NC}"
+  echo -e "${RED}Error: city must be one of: berne, zurich, lausanne${NC}"
   exit 1
   ;;
 esac
@@ -29,8 +29,8 @@ clustername="$CITY"
 # helper: return index 0/1/2 for a city name
 city_index() {
   case "$1" in
-  zurich) echo 0 ;;
-  berne) echo 1 ;;
+  berne) echo 0 ;;
+  zurich) echo 1 ;;
   lausanne) echo 2 ;;
   *) echo -1 ;;
   esac
