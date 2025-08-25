@@ -13,10 +13,10 @@ Before the demo, execute make demo1 in the parent folder.
 kubectl get pods -n dns
 ```
 
-### 2. Show some-svc.yaml file
+### 2. Show svc.yaml file
 
 ```
-cat some-svc.yaml
+cat svc.yaml
 ```
 
 ### 3. Apply svc.yaml
