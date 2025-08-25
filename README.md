@@ -19,5 +19,5 @@ This repository is a **collection of our conference talks, blog posts, and open-
 | 2025 | KubeCon + CloudNativeCon Europe |[Keynote: Cloud Native Evolution in Telecom: 5G, 6G and Beyond!](https://kccnceu2025.sched.com/event/1vUeb/keynote-cloud-native-evolution-in-telecom-5g-6g-and-beyond-faseela-k-ericsson-software-technology-tom-kivlin-vodafone-philippe-ensarguet-orange-joel-studler-swisscom) | [PDF](https://static.sched.com/hosted_files/kccnceu2025/9e/3.%29%20Faseela%20K%20Panel%20%28with%20Tom%20Kivlin%2C%20Phillippe%20Ensarguet%2C%20and%20Joel%20Studler%29.pdf) | [YouTube](https://youtu.be/qj9q_-S91L8) |  |
 | 2025 | Cloud Native Zurich Rejects | From Weeks to Seconds: Scaling Network Automation with Kubernetes Operators | [PDF](2025/CloudNativeZurichRejects/From-Weeks-to-Seconds-Scaling-Network-Automation-with-Kubernetes-Operators.pdf) | | |
 | 2025 | Cloud Native Zurich | Enterprise-grade Infrastructure as a Service in a Cloud Native Way | [PDF](2025/CloudNativeZurich/Enterprise-grade-Infrastructure-as-a-Service-in-a-Cloud-Native-Way.pdf) | | |
-
 | 2025 | Open Source Summit Europe |Dig Smart: Creating A Reliable Cloud-Native DNS Service | [PDF](2025/OpenSourceSummit/dns-presentation-2025-08-25.pdf) | | [GitHub](https://github.com/swisscom/cloud-native-telco/tree/main/prototypes/dns) |
+
