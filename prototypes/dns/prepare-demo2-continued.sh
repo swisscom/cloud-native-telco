@@ -5,6 +5,6 @@
 # Get the directory of the current script
 SCRIPT_DIR=$(dirname "$0")
 
-kubectl --context kind-dns-0 wait deployment/coredns -n kube-system --for=condition=Available --timeout=120s
+kubectl --context kind-berne wait deployment/coredns -n kube-system --for=condition=Available --timeout=120s
 
-"$SCRIPT_DIR/setup-kind.sh" 0
+"$SCRIPT_DIR/setup-kind.sh" berne
