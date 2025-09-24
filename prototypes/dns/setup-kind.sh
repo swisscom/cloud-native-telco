@@ -187,7 +187,6 @@ for cluster in $clusters; do
     sed_inplace "s|apiUrl: http://pdns-service.default.svc.cluster.local|apiUrl: http://pdns-service.$ns.svc.cluster.local|g" "$tmp_config"
   fi
 
-
   RELEASE_NAME="external-dns-${cluster}"
   helm upgrade --install --namespace "$ns" --kube-context "kind-${clustername}" \
     "$RELEASE_NAME" oci://registry-1.docker.io/bitnamicharts/external-dns \
@@ -207,8 +206,7 @@ done
 kubectl --context "kind-${clustername}" apply -f base/pdns-config.yaml
 helm install --namespace $ns --kube-context kind-$clustername mariadb oci://registry-1.docker.io/bitnamicharts/mariadb -f ./templates/mariadb-values.yaml
 
-# ---- Install CoreDNS in this cluster ----
-
+# ---- Install CoreDNS in this cluster ----ß
 values_file="templates/core-dns-values.yaml"
 config_folder="tmp/cluster-${clustername}"
 mkdir -p "$config_folder"

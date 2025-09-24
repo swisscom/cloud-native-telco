@@ -4,14 +4,22 @@
 ## Defaults: https://github.com/bitnami/charts/blob/master/bitnami/mariadb/values.yaml
 ##
 
-# global:
-#   security:
-#     allowInsecureImages: true
+global:
+  security:
+    allowInsecureImages: true
 
-# image:
+image:
+  repository: bitnamilegacy/mariadb
 #   registry: registry-1.docker.io
-#   repository: bitnami/mariadb
 #   pullPolicy: IfNotPresent
+
+volumePermissions:
+  image:
+    repository: bitnamilegacy/os-shell
+
+metrics:
+  image:
+    repository: bitnamilegacy/mysqld-exporter
 
 fullnameOverride: mariadb
 architecture: standalone
