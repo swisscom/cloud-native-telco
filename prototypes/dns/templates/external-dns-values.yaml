@@ -1,9 +1,14 @@
 ---
 # source https://github.com/kubernetes-sigs/external-dns/blob/master/charts/external-dns/values.yaml
+
+global:
+  security:
+    allowInsecureImages: true
+
 image:
-  repository: bitnami/external-dns
+  repository: bitnamilegacy/external-dns
   # Overrides the image tag whose default is v{{ .Chart.AppVersion }}
-  tag: "0.16.1"
+  #tag: "0.16.1"
   pullPolicy: IfNotPresent
 
 serviceAccount:
