@@ -204,7 +204,7 @@ done
 
 # Install mariadb
 kubectl --context "kind-${clustername}" apply -f base/pdns-config.yaml
-helm install --namespace $ns --kube-context kind-$clustername mariadb oci://registry-1.docker.io/bitnamicharts/mariadb -f ./templates/mariadb-values.yaml
+helm upgrade --install --namespace $ns --kube-context kind-$clustername mariadb oci://registry-1.docker.io/bitnamicharts/mariadb -f ./templates/mariadb-values.yaml
 
 # ---- Install CoreDNS in this cluster ----ß
 values_file="templates/core-dns-values.yaml"
