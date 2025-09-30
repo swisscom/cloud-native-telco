@@ -116,7 +116,7 @@ pull_image_if_not_exists coredns/coredns "1.12.0"
 pull_image_if_not_exists infoblox/dnstools "latest"
 pull_image_if_not_exists registry.k8s.io/e2e-test-images/jessie-dnsutils "1.3"
 pull_image_if_not_exists powerdns/pdns-auth-49 "4.9.4"
-pull_image_if_not_exists bitnami/external-dns "0.16.1"
+pull_image_if_not_exists bitnamilegacy/external-dns "0.16.1"
 pull_image_if_not_exists bash "latest"
 pull_image_if_not_exists nginx "latest"
 
@@ -125,7 +125,7 @@ load_into_kind_nodes "docker.io/coredns/coredns:1.12.0"
 load_into_kind_nodes "docker.io/infoblox/dnstools:latest" || echo -e "${RED}infoblox/dnstools may lack ${PLATFORM}.${NC}"
 load_into_kind_nodes "registry.k8s.io/e2e-test-images/jessie-dnsutils:1.3" || echo -e "${RED}jessie-dnsutils may lack ${PLATFORM}.${NC}"
 load_into_kind_nodes "docker.io/powerdns/pdns-auth-49:4.9.4" || echo -e "${RED}powerdns/pdns-auth-49 may lack ${PLATFORM}.${NC}"
-load_into_kind_nodes "docker.io/bitnami/external-dns:0.16.1"
+load_into_kind_nodes "docker.io/bitnamilegacy/external-dns:0.16.1"
 load_into_kind_nodes "docker.io/library/bash:latest"
 load_into_kind_nodes "docker.io/library/nginx:latest"
 
@@ -202,7 +202,11 @@ for cluster in $clusters; do
   fi
 done
 
-# ---- Install CoreDNS in this cluster ----
+# Install mariadb
+kubectl --context "kind-${clustername}" apply -f base/pdns-config.yaml
+helm upgrade --install --namespace $ns --kube-context kind-$clustername mariadb oci://registry-1.docker.io/bitnamicharts/mariadb -f ./templates/mariadb-values.yaml
+
+# ---- Install CoreDNS in this cluster ----ß
 values_file="templates/core-dns-values.yaml"
 config_folder="tmp/cluster-${clustername}"
 mkdir -p "$config_folder"

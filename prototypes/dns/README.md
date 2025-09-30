@@ -51,3 +51,11 @@ Please use the create-3-cluster-setup.sh to automatically setup a 3 cluster setu
 
 To teardown the kind clusters simply execute:
 make rm
+
+### Check MariaDB Records:
+- Get DB root password: `kubectl get secret --namespace dns mariadb -o jsonpath="{.data.mariadb-root-password}" | base64 -d`
+- Connect to mariadb pod and execute `mariadb -uroot -p`
+- `SHOW DATABASES;`
+- `USE powerdns;`
+- `SHOW Tables;`
+
