@@ -20,4 +20,4 @@ This repository is a **collection of our conference talks, blog posts, and open-
 | 2025 | Cloud Native Zurich Rejects | From Weeks to Seconds: Scaling Network Automation with Kubernetes Operators | [PDF](2025/CloudNativeZurichRejects/From-Weeks-to-Seconds-Scaling-Network-Automation-with-Kubernetes-Operators.pdf) | | |
 | 2025 | Cloud Native Zurich | Enterprise-grade Infrastructure as a Service in a Cloud Native Way | [PDF](2025/CloudNativeZurich/Enterprise-grade-Infrastructure-as-a-Service-in-a-Cloud-Native-Way.pdf) | | |
 | 2025 | Open Source Summit Europe |Dig Smart: Creating A Reliable Cloud-Native DNS Service | [PDF](2025/OpenSourceSummit/dns-presentation-2025-08-25.pdf) | | [GitHub](https://github.com/swisscom/cloud-native-telco/tree/main/prototypes/dns) |
-
+| 2025 | Container Days Conference |From Weeks to Seconds: Scaling Network Automation with Kubernetes Operators | [PDF](2025/ContainerDaysConference/ContainerDays25_from_weeks_to_seconds_network_autiomation_using_KRM.pdf) | [YouTube](https://youtu.be/RytDzZYDQTU?si=CrzJQ7p8yz4darnz) |  |
