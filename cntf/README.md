@@ -6,6 +6,6 @@ Telecommunication operators are struggling to adopt and scale cloud native techn
 
 Documents:
 
-- [CNTF-Tech-Stream-Productivity-Gains_2025-02.pdf](CNTF_Tech_Stream-Productivity_Gains_Rev_2.1.0.pdf)
+- [CNTF-Tech-Stream-Productivity-Gains_Rev_2.1.0.pdf](CNTF_Tech_Stream-Productivity_Gains_Rev_2.1.0.pdf)
 
 Get in touch with Lukas Leuthold (<https://www.linkedin.com/in/lukas-leuthold-14a496250/>) for more information.
