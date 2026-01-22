@@ -1,5 +1,7 @@
 # Demo 1: ExternalDNS & PowerDNS Single Cluster
 
+[Demo 1 recording](https://youtu.be/CR8R3cOCLXc?si=rtUyv1LNGAyV1dpe&t=755)
+
 ![PowerDNS & ExternalDNS](powerdns-and-externaldns.png "PowerDNS & ExternalDNS")
 
 ## Demo Preparation

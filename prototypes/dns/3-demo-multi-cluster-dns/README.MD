@@ -1,5 +1,7 @@
 # Demo 3 Multi-cluster DNS
 
+[Demo 3 recording](https://youtu.be/CR8R3cOCLXc?si=gcoYWjIChXGIhiRW&t=1232)
+
 ![dual-cluster-dns-arch](2-cluster-dns-arch.png "Dual Cluster DNS Architecture")
 
 ## Demo Preparation
@@ -97,4 +99,3 @@ kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer google.com
 ```
 kubectl --context kind-zurich -n dns scale deployment forwarder-coredns --replicas=1
 ```
-

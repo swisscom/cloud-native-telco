@@ -1,5 +1,7 @@
 # Demo 2: Forwarding
 
+[Demo 2 recording](https://youtu.be/CR8R3cOCLXc?si=XhjIBz-DK8mpXbXi&t=953)
+
 ![single-cluster-dns-arch](single-cluster-dns-arch.png "Single Cluster DNS Architecture")
 
 ## Demo Preparation
