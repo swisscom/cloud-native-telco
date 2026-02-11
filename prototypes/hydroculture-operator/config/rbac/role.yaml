@@ -1,0 +1,47 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - hydroculture.containerdays.io
+  resources:
+  - herbs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - hydroculture.containerdays.io
+  resources:
+  - herbs/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - hydroculture.containerdays.io
+  resources:
+  - herbs/status
+  verbs:
+  - get
+  - patch
+  - update

@@ -1,0 +1,9 @@
+apiVersion: hydroculture.containerdays.io/v1
+kind: Herbs
+metadata:
+  labels:
+    app.kubernetes.io/name: hydroculture-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: basil-wan-kenobi
+spec:
+  plant: basil

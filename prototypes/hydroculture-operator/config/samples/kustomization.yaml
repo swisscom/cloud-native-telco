@@ -1,0 +1,4 @@
+## Append samples of your project ##
+resources:
+- hydroculture_v1_herbs.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

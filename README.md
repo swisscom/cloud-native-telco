@@ -10,7 +10,7 @@ This repository is a **collection of our conference talks, blog posts, and open-
 
 | Year | Conference/Platform | Talk Title | Slides | Video | Code Examples |
 |------|------------|------------|--------|-------|--------------|
-| 2026 | Container Days Conference London |Defer: The Silent Hero of Kubernetes Operators | [PDF](2026/ContainerDaysConferenceLondon/Defer-the-silent-hero-of-kubernetes-operators.pdf) |  | [Demo](https://github.com/swisscom/cloud-native-telco/tree/main/prototypes/hydroculture-operator) |
+| 2026 | Container Days Conference London |Defer: The Silent Hero of Kubernetes Operators | [PDF](2026/ContainerDaysLondon/Defer-the-silent-hero-of-kubernetes-operators.pdf) |  | [Demo](https://github.com/swisscom/cloud-native-telco/tree/main/prototypes/hydroculture-operator) |
 | 2025 | Container Days Conference |The Cloud-Native Advantage: Intent-based Network Automation | [PDF](2025/ContainerDaysConference/The-Cloud-Native-Advantage.pdf) | [YouTube](https://youtu.be/P7cCeGBq3aQ) |  |
 | 2025 | Container Days Conference |From Weeks to Seconds: Scaling Network Automation with Kubernetes Operators | [PDF](2025/ContainerDaysConference/ContainerDays25_from_weeks_to_seconds_network_autiomation_using_KRM.pdf) | [YouTube](https://youtu.be/RytDzZYDQTU?si=CrzJQ7p8yz4darnz) |  |
 | 2025 | Open Source Summit Europe |Dig Smart: Creating A Reliable Cloud-Native DNS Service | [PDF](2025/OpenSourceSummit/dns-presentation-2025-08-25.pdf) | | [GitHub](https://github.com/swisscom/cloud-native-telco/tree/main/prototypes/dns) |
