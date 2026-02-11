@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: temperature
+  namespace: default
+data:
+  value: "25"
