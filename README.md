@@ -4,10 +4,9 @@ The telecom industry is evolving rapidly, moving away from **legacy, hardware-ce
 
 This repository is a **collection of our conference talks, blog posts, and open-source contributions**.
 
-## Cloud Native Telco Reference architecture
+## Cloud Native Telco Reference Architecture
 
-Checkout our ***end-to-end cloud native telco platform automation at Swisscom*** reference architecture
-on the cloud native architecture page: https://architecture.cncf.io/architectures/swisscom-cloud-native-telco
+Explore our ***end-to-end Cloud Native Telco Platform Automation at Swisscom*** — a recognized reference architecture showcasing real-world, production-grade cloud native practices for telco – on the CNCF Cloud Native Reference Architecture website: <https://architecture.cncf.io/architectures/swisscom-cloud-native-telco>
 
 ---
 
