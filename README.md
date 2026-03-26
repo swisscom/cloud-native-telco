@@ -14,7 +14,7 @@ Explore our ***end-to-end Cloud Native Telco Platform Automation at Swisscom*** 
 
 | Year | Conference/Platform | Talk Title | Slides | Video | Code Examples |
 |------|------------|------------|--------|-------|--------------|
-| 2026 | KubeCon + CloudnativeCon Europe | The Accidental Platform Team: Kubernetes Operators at Swisscom | [PDF](2026-03-26-The-accidental-platform-team-kubernetes-operators-at-swisscom.pdf) | | |
+| 2026 | KubeCon + CloudnativeCon Europe | The Accidental Platform Team: Kubernetes Operators at Swisscom | [PDF](2026/KubeConEurope/2026-03-26-The-accidental-platform-team-kubernetes-operators-at-swisscom.pdf) | | |
 | 2026 | Container Days Conference London |The Accidental Platform Team: Kubernetes Operators at Swisscom | [PDF](2026/ContainerDaysLondon/The-accidental-platform-team-kuberntes-operators-at-swisscom.pdf) |  |  |
 | 2026 | Container Days Conference London |Defer: The Silent Hero of Kubernetes Operators | [PDF](2026/ContainerDaysLondon/Defer-the-silent-hero-of-kubernetes-operators.pdf) |  | [Demo](prototypes/hydroculture-operator) |
 | 2025 | Container Days Conference |The Cloud-Native Advantage: Intent-based Network Automation | [PDF](2025/ContainerDaysConference/The-Cloud-Native-Advantage.pdf) | [YouTube](https://youtu.be/P7cCeGBq3aQ) |  |
