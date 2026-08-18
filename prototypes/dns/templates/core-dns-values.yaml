@@ -12,6 +12,21 @@ service:
 
 
 servers:
+  # Own server block so CoreDNS tags 5gc traffic with zone="5gc.3gppnetwork.org."
+  - zones:
+      - zone: 5gc.3gppnetwork.org.
+    port: 53
+    plugins:
+      - name: errors
+      - name: prometheus
+        parameters: 0.0.0.0:9153
+      - name: reload
+      - name: loadbalance
+      # setup-kind.sh appends the other clusters' pdns-ext-service IPs to this line
+      - name: forward
+        parameters: . 10.96.0.12
+        configBlock: |-
+          policy sequential
   - zones:
       - zone: .
     port: 53
@@ -29,10 +44,5 @@ servers:
       - name: loop
       - name: reload
       - name: loadbalance
-      # IMPORTANT: order of forwards is important
-      - name: forward
-        parameters: 5gc.3gppnetwork.org. 10.96.0.12
-        configBlock: |-
-          policy sequential
       - name: forward
         parameters: . 1.1.1.1

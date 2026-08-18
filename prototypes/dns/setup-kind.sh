@@ -223,8 +223,8 @@ done
 all_ips="$(echo $all_ips | xargs)"
 echo "all_ips is: $all_ips"
 
-# append after 10.96.0.12 on the parameters line
-sed_inplace "/parameters: 5gc.3gppnetwork.org. 10.96.0.12/ s/\$/ $all_ips/" "$tmp_config"
+# append after 10.96.0.12 on the 5gc server block's forward parameters line
+sed_inplace "/parameters: \. 10\.96\.0\.12\$/ s/\$/ $all_ips/" "$tmp_config"
 
 RELEASE_NAME=forwarder
 helm repo add coredns https://coredns.github.io/helm >/dev/null 2>&1 || true
@@ -244,6 +244,9 @@ done
 all_ips="$(echo $all_ips | xargs)"
 echo "all ips for forwarders: $all_ips"
 
+# The 5gc server block forwards without /etc/resolv.conf, so it needs its own rule: it is the
+# only forward line where 10.96.0.11 is followed directly by the opening config brace.
+sed_inplace "/^[[:space:]]*forward[[:space:]]+\.[[:space:]]+10\.96\.0\.11[[:space:]]+\{/ s#(10\.96\.0\.11)([[:space:]]+\{)#\1 $all_ips\2#" "$tmp_config"
 sed_inplace "/^[[:space:]]*forward[[:space:]]+\.[[:space:]]+10\.96\.0\.11 .*\/etc\/resolv\.conf/ s#(10\.96\.0\.11)([[:space:]]+/etc\/resolv\.conf)#\1 $all_ips\2#" "$tmp_config"
 
 kubectl --context "kind-${clustername}" apply -f "$tmp_config"
