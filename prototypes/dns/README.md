@@ -27,7 +27,7 @@ The script is the automated equivalent of:
 
 ```bash
 brew install colima docker kind
-colima start -c 4 -m 4 --network-address
+colima start -c 8 -m 8 --network-address
 colima ssh # ssh onto colima node
 sudo -i
 echo "fs.inotify.max_user_watches = 1048576" >> /etc/sysctl.conf
