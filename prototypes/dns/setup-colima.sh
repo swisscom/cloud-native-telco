@@ -4,8 +4,8 @@
 set -euo pipefail
 
 PROFILE="${COLIMA_PROFILE:-default}"
-CPUS="${COLIMA_CPUS:-4}"
-MEMORY="${COLIMA_MEMORY:-4}"
+CPUS="${COLIMA_CPUS:-8}"
+MEMORY="${COLIMA_MEMORY:-8}"
 
 if ! command -v colima >/dev/null 2>&1; then
   brew install colima docker kind
