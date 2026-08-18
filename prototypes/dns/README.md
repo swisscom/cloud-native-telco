@@ -21,6 +21,10 @@ The scripts have also been tested on linux directly.
 
 ## Prerequisites
 
+Run `make colima` (or `./setup-colima.sh`) to install the tooling, start the VM and apply the required inotify limits. It prints the `DOCKER_HOST` value to export afterwards.
+
+The script is the automated equivalent of:
+
 ```bash
 brew install colima docker kind
 colima start -c 4 -m 4 --network-address
@@ -30,7 +34,7 @@ echo "fs.inotify.max_user_watches = 1048576" >> /etc/sysctl.conf
 echo "fs.inotify.max_user_instances = 512" >> /etc/sysctl.conf
 apt update && apt install -y dnsutils
 colima restart
-export DOCKER_HOST=unix:///Users/joel/.colima/local/docker.sock
+KIND_EXPERIMENTAL_PROVIDER="" && make demo3-fresh
 ```
 
 ## Demo Environment setup

@@ -49,7 +49,7 @@ service:
 logLevel: info
 logFormat: json
 
-interval: 30s    # The interval for DNS updates.
+interval: 10s    # The interval for DNS updates.
 triggerLoopOnEvent: true
 
 
