@@ -1,0 +1,121 @@
+# kube-prometheus-stack profile for kind-berne, installed into the `monitoring` namespace.
+#
+# Runs Prometheus in agent mode: it discovers targets through the PodMonitors in
+# monitors/dns-monitors.yaml and pushes everything to the central Prometheus, which
+# runs on kind-zurich. It stores nothing locally and serves no UI.
+#
+# The `cluster` label is NOT set here. It comes from a relabeling in
+# monitors/dns-monitors.yaml — see the comment in that file for why externalLabels
+# cannot be used for it.
+
+# --- No second Grafana, no alerting, no self-monitoring ---
+grafana:
+  enabled: false
+
+defaultRules:
+  create: false
+
+alertmanager:
+  enabled: false
+
+nodeExporter:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+kubelet:
+  enabled: false
+
+kubeApiServer:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+# We define our own kube-dns PodMonitor so the job label is deterministic.
+coreDns:
+  enabled: false
+
+kubeDns:
+  enabled: false
+
+prometheusOperator:
+  serviceMonitor:
+    selfMonitor: false
+  admissionWebhooks:
+    enabled: false
+    patch:
+      enabled: false
+  tls:
+    enabled: false
+
+prometheus:
+  # Agent mode: remote-write only, no TSDB, no query API, no rule evaluation.
+  agentMode: true
+
+  serviceMonitor:
+    selfMonitor: false
+
+  # Nothing needs to reach the agent from outside the cluster.
+  service:
+    type: ClusterIP
+
+  prometheusSpec:
+    replicas: 1
+    shards: 1
+
+    scrapeInterval: 5s
+    scrapeTimeout: 5s
+
+    # The central Prometheus on kind-zurich, at its pinned MetalLB address on the
+    # shared "kind" docker network. A raw IP rather than a Service DNS name on
+    # purpose: testcase 01 kills kube-system CoreDNS.
+    #
+    # batchSendDeadline defaults to 5s, which at this sample volume is what decides how
+    # long berne's samples wait before being sent: a batch is never full. That delay is
+    # visible in the demo as berne reacting ~4s later than zurich to a pod coming back,
+    # so send more eagerly instead.
+    remoteWrite:
+    - url: http://172.18.2.100:9090/api/v1/write
+      queueConfig:
+        batchSendDeadline: 1s
+
+    # Only pick up the DNS PodMonitors (labelled dns-testing: enabled).
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector:
+      matchLabels:
+        dns-testing: "enabled"
+    podMonitorNamespaceSelector: {}
+
+    # Everything else matches nothing.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        dns-testing: "unused"
+    scrapeConfigSelectorNilUsesHelmValues: false
+    scrapeConfigSelector:
+      matchLabels:
+        dns-testing: "unused"
+    probeSelectorNilUsesHelmValues: false
+    probeSelector:
+      matchLabels:
+        dns-testing: "unused"
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector:
+      matchLabels:
+        dns-testing: "unused"
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi

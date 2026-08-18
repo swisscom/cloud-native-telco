@@ -1,0 +1,71 @@
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: k8s-coredns-chaos-test
+spec:
+  concurrent: false
+  timeouts:
+    assert: 150s # Increased from default 60s to allow for chaos injection delays
+    cleanup: 60s
+  steps:
+    - name: Post Test Start
+      description: Annotate test start
+      try:
+        - script:
+            content: |
+              ../utils/annotate-grafana.sh test-k8s-dns-start
+    - name: Inject Chaos
+      description: Inject Chaos and assert destruction
+      try:
+        - apply:
+            resource:
+              apiVersion: chaos.datadoghq.com/v1beta1
+              kind: Disruption
+              metadata:
+                name: delete-k8s-coredns-pod
+                namespace: kube-system
+              spec:
+                selector:
+                  k8s-app: kube-dns
+                count: 1
+                duration: 1m
+                containerFailure:
+                  forced: true # send a SIGTERM signal to all of the pod's containers
+        - assert:
+            resource:
+              apiVersion: chaos.datadoghq.com/v1beta1
+              kind: Disruption
+              metadata:
+                name: delete-k8s-coredns-pod
+                namespace: kube-system
+              status:
+                #injectedTargetsCount: 1 # Drops to zero at the end of the chaos period
+                selectedTargetsCount: 1
+                ignoredTargetsCount: 1 # Zero in the other TCs
+                injectionStatus: PreviouslyInjected
+    - name: Post Test Stop
+      description: Annotate test end
+      try:
+        - script:
+            content: |
+              ../utils/annotate-grafana.sh test-k8s-dns-end
+    - name: Validate Revival
+      try:
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: coredns
+                namespace: kube-system
+              status:
+                availableReplicas: 2
+                (conditions[?type == 'Available']):
+                - status: "True"
+    - name: Annotate System Restored
+      description: Annotate system restored state
+      try:
+        - script:
+            content: |
+              ../utils/annotate-grafana.sh test-k8s-dns-system-restored

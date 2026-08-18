@@ -1,0 +1,72 @@
+---
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: test-forwarder-chaos
+spec:
+  concurrent: false
+  timeouts:
+    assert: 150s # Increased from default 60s to allow for chaos injection delays
+    cleanup: 60s
+  steps:
+    - name: Post Test Start
+      description: Annotate chaos test start
+      try:
+        - script:
+            content: |
+              ../utils/annotate-grafana.sh test-forwarder-start
+    - name: Inject Chaos
+      description: Inject Chaos and assert destruction
+      try:
+        - apply:
+            resource:
+              apiVersion: chaos.datadoghq.com/v1beta1
+              kind: Disruption
+              metadata:
+                name: delete-forwarder-pod
+                namespace: dns
+              spec:
+                selector:
+                  k8s-app: coredns
+                  app.kubernetes.io/instance: forwarder
+                count: 1
+                duration: 1m
+                containerFailure:
+                  forced: false # send a SIGTERM signal to all of the pod's containers
+        - assert:
+            resource:
+              apiVersion: chaos.datadoghq.com/v1beta1
+              kind: Disruption
+              metadata:
+                name: delete-forwarder-pod
+                namespace: dns
+              status:
+                #injectedTargetsCount: 1 # Drops to zero at the end of the chaos period
+                selectedTargetsCount: 1
+                ignoredTargetsCount: 0
+                injectionStatus: PreviouslyInjected
+    - name: Post Test Stop
+      description: Annotate Chaos test end
+      try:
+        - script:
+            content: |
+              ../utils/annotate-grafana.sh test-forwarder-end
+    - name: Validate Revival
+      try:
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: forwarder-coredns
+                namespace: dns
+              status:
+                availableReplicas: 1
+                (conditions[?type == 'Available']):
+                - status: "True"
+    - name: Annotate System Restored
+      description: Annotate system restored state
+      try:
+        - script:
+            content: |
+              ../utils/annotate-grafana.sh test-forwarder-system-restored

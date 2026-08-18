@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dns-traffic-generator-zurich
+spec:
+  selector:
+    matchLabels:
+      app: dns-traffic-generator-zurich
+  # The generator is the sole writer of the records it owns, so never run two at once.
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: dns-traffic-generator-zurich
+    spec:
+      serviceAccountName: dns-traffic-generator-sa
+      containers:
+      - name: dns-traffic-generator
+        # Build with `make docker-build` in the dns-traffic-generator repo and load it into the
+        # kind cluster with `kind load docker-image dns-traffic-generator:local --name zurich`.
+        image: dns-traffic-generator:local
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        args:
+          - -listen=:9090
+          - -interval=1s
+          - -timeout=3s
+          - -dns-servers=udp://10.96.0.10:53
+          - -domain=zurich.5gc.3gppnetwork.org
+          - -record-count=50
+          - -negative-count=0
+          - -enable-rotation=true
+          - -update-interval=2s
+          - -update-namespace=default
+          - -subnet=10.1.1.192/27
+        ports:
+        - name: metrics
+          containerPort: 9090
+--- # Scraped in-cluster by the chaos-testing PodMonitor, so no MetalLB address
+# is needed. Kept as a ClusterIP for manual curling from inside the cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: dns-traffic-generator-zurich-metrics
+spec:
+  type: ClusterIP
+  selector:
+    app: dns-traffic-generator-zurich
+  ports:
+  - port: 9090
+    targetPort: 9090
+---
+#RBAC to allow dns-traffic-generator to read and patch DNSEndpoint resources
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dns-traffic-generator-sa
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: dns-traffic-generator-dnsendpoint-rw
+rules:
+- apiGroups: ["externaldns.k8s.io"]
+  resources: ["dnsendpoints"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: dns-traffic-generator-dnsendpoint-binding
+subjects:
+- kind: ServiceAccount
+  name: dns-traffic-generator-sa
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: dns-traffic-generator-dnsendpoint-rw
+  apiGroup: rbac.authorization.k8s.io

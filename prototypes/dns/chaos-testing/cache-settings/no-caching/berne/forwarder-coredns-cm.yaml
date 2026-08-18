@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  annotations:
+    meta.helm.sh/release-name: forwarder
+    meta.helm.sh/release-namespace: dns
+  labels:
+    app.kubernetes.io/instance: forwarder
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: coredns
+    helm.sh/chart: coredns-1.40.0
+    k8s-app: coredns
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: CoreDNS
+  name: forwarder-coredns
+  namespace: dns
+data:
+  Corefile: |-
+    # Own server block so CoreDNS tags 5gc traffic with zone="5gc.3gppnetwork.org."
+    # in its metrics; a single ".:53" block reports every query as zone=".".
+    5gc.3gppnetwork.org.:53 {
+        errors
+        prometheus 0.0.0.0:9153
+        reload
+        loadbalance
+        forward . 10.96.0.12 172.18.2.1 {
+            policy sequential
+        }
+    }
+
+    .:53 {
+        errors
+        health {
+            lameduck 5s
+        }
+        ready
+        prometheus 0.0.0.0:9153
+        loop
+        reload
+        loadbalance
+        forward . 1.1.1.1
+    }
