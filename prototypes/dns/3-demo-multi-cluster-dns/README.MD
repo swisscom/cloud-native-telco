@@ -14,33 +14,29 @@ Before the demo, execute `make demo3` or `make demo3-fresh` in the parent folder
 uv run --directory prototypes/dns/3-demo-multi-cluster-dns/dashboard python dns_dashboard.py
 ```
 
-## Demo creation when everything is operational
+## Demo Creation When Everything Is Up and Running
 
 ```bash
-# Lookup endpoint2 to confirm it doesn't yet exist
-echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer  endpoint2.5gc.3gppnetwork.org
-echo "zurich:" && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer  endpoint2.5gc.3gppnetwork.org
+# Lookup endpoint1 to confirm it doesn't yet exist
+echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer  endpoint1.5gc.3gppnetwork.org
+echo "zurich:" && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer  endpoint1.5gc.3gppnetwork.org
 
-# apply DNS Resource "endpoint2.5gc.3gppnetwork.org" to Zurich cluster
-cat dns-endpoint-cr-2.yaml
-kubectl --context kind-zurich apply -f dns-endpoint-cr-2.yaml
+# apply DNS Resource "endpoint1.5gc.3gppnetwork.org" to Zurich cluster
+cat dns-endpoint-cr-1.yaml
+kubectl --context kind-zurich apply -f dns-endpoint-cr-1.yaml
 
 # Show logs of ExternalDNS deployments in zurich
 echo "berne:"  && {kubectl --context kind-zurich -n dns logs deploy/external-dns-zurich | tail}
 echo "zurich:" && {kubectl --context kind-zurich -n dns logs deploy/external-dns-berne | tail}
 
-# Lookup endpoint2
-echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer  endpoint2.5gc.3gppnetwork.org
-echo "zurich:" && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer  endpoint2.5gc.3gppnetwork.org
+# Lookup endpoint1
+echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer  endpoint1.5gc.3gppnetwork.org
+echo "zurich:" && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer  endpoint1.5gc.3gppnetwork.org
 ```
 
-### Show fully operational system while site Berne is degraded
+## Demo Creation When PowerDNS in One Site Is Gone
 
 ```bash
-# Lookup endpoint3 to confirm it doesn't yet exist
-echo "berne:"  && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
-echo "zurich:" && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
-
 # Scale down PowerDNS deployment to 0 in berne
 kubectl --context kind-berne -n dns scale deployment pdns-deployment --replicas=0
 
@@ -48,17 +44,21 @@ kubectl --context kind-berne -n dns scale deployment pdns-deployment --replicas=
 echo "berne:"  && kubectl --context kind-berne -n dns get deploy
 echo "zurich:" && kubectl --context kind-zurich -n dns get deploy
 
-# apply DNS Resource "endpoint3.5gc.3gppnetwork.org" to Berne cluster
-cat dns-endpoint-cr-3.yaml
-kubectl --context kind-berne apply -f dns-endpoint-cr-3.yaml
+# Lookup endpoint2 to confirm it doesn't yet exist
+echo "berne:"  && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint2.5gc.3gppnetwork.org
+echo "zurich:" && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint2.5gc.3gppnetwork.org
 
-# Lookup endpoint3
-echo "berne:"  && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
-echo "zurich:" && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
+# apply DNS Resource "endpoint2.5gc.3gppnetwork.org" to Berne cluster
+cat dns-endpoint-cr-2.yaml
+kubectl --context kind-berne apply -f dns-endpoint-cr-2.yaml
+
+# Lookup endpoint2
+echo "berne:"  && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint2.5gc.3gppnetwork.org
+echo "zurich:" && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint2.5gc.3gppnetwork.org
 # both succeed because cross cluster forwarding.
 ```
 
-### Further degrade site Berne by scaleing down coredns forwarder deployment to 0
+## Demo Creation When PowerDNS + CoreDNS Forwarder in One Site Is Gone
 
 ```bash
 # scale down forwarder in berne
@@ -68,12 +68,20 @@ kubectl --context kind-berne -n dns scale deployment forwarder-coredns --replica
 echo "berne:"  && kubectl --context kind-berne -n dns get deploy
 echo "zurich:" && kubectl --context kind-zurich -n dns get deploy
 
+# Lookup endpoint3 to confirm it doesn't yet exist
+echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
+echo "zurich:" && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
+
+# apply DNS Resource "endpoint3.5gc.3gppnetwork.org" to Berne cluster
+cat dns-endpoint-cr-3.yaml
+kubectl --context kind-berne apply -f dns-endpoint-cr-3.yaml
+
 # Lookup endpoint3
 echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 echo "zurich:" && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 ```
 
-### Scale down coredns forwarder deployment to 0 in zurich
+## Break It by Scaling Down the Fallback CoreDNS Forwarder on the Other Site
 
 ```bash
 # scale down zurich forwarder
@@ -87,14 +95,14 @@ echo "zurich:" && kubectl --context kind-zurich -n dns get deploy
 echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 echo "zurich:" && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 
-# Lookup google.com
-echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer google.com
-echo "zurich:" && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer google.com
+# Lookup example.com hosted on a public DNS
+echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer example.com
+echo "zurich:" && kubectl --context kind-berne exec -it dnsutils -- dig +noall +answer example.com
 ```
 
 ## Restore
 
-### Scale up coredns forwarder deployment to 1 in zurich
+### Restore CoreDNS Forwarder In Second Site
 
 ```bash
 # scale restore forwarder in zurich
@@ -109,13 +117,14 @@ echo "berne:"  && kubectl --context kind-berne exec -it dnsutils -- dig +noall +
 echo "zurich:" && kubectl --context kind-zurich exec -it dnsutils -- dig +noall +answer endpoint3.5gc.3gppnetwork.org
 ```
 
-### Restore everything
+### Restore Everything
 
 ```bash
 # scale back all deployments and delete dns-endpoint
 kubectl --context kind-zurich -n dns scale deployment forwarder-coredns --replicas=1
 kubectl --context kind-berne -n dns scale deployment pdns-deployment --replicas=1
 kubectl --context kind-berne -n dns scale deployment forwarder-coredns --replicas=1
-kubectl --context kind-zurich delete -f dns-endpoint-cr-2.yaml
+kubectl --context kind-zurich delete -f dns-endpoint-cr-1.yaml
+kubectl --context kind-berne delete -f dns-endpoint-cr-2.yaml
 kubectl --context kind-berne delete -f dns-endpoint-cr-3.yaml
 ```
