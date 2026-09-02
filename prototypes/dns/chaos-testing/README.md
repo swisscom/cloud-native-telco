@@ -72,7 +72,7 @@ Caching decides whether a DNS outage is visible at all: with caching on, clients
 from cache while the backend is down, so a chaos test may show little or no impact.
 
 ```bash
-./cache-settings/apply-setting.sh no-caching berne
+./cache-settings/apply-setting.sh std-caching berne
 ./cache-settings/apply-setting.sh no-caching zurich
 ```
 
