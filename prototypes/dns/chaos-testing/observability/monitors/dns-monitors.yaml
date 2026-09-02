@@ -1,0 +1,150 @@
+---
+# PodMonitors for every DNS component under test.
+#
+#
+# PodMonitors rather than ServiceMonitors on purpose:
+#   * they scrape each pod individually, so CoreDNS replicas stay distinguishable
+#   * they follow pod restarts automatically, which is what the chaos tests need
+#   * they need no Service, so pdns and the traffic generator require no changes
+#
+# Every endpoint carries the same three relabelings:
+#
+#   ready    a pod answers on its metrics port before its readiness probe passes, so
+#            scraping every pod would report a component as healthy while the Service
+#            is still not routing DNS to it. Keeping only ready pods makes `up` track
+#            "serving traffic" rather than "process started", which is what the health
+#            panels claim to show.
+#
+#   job      pinned explicitly, so the dashboard queries keep working regardless of
+#            what the operator would otherwise derive.
+#
+#   cluster  derived from the kind node name (`zurich-control-plane` -> `zurich`).
+#            It cannot come from prometheusSpec.externalLabels: Prometheus never writes
+#            external labels into its local TSDB, it only attaches them to outgoing data.
+#            Zurich's Prometheus scrapes itself, so its own series would carry no cluster
+#            label at all. Deriving it here keeps one file for both clusters and labels
+#            berne and zurich by the same mechanism.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: kube-dns
+  namespace: monitoring
+  labels:
+    dns-testing: "enabled"
+spec:
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  selector:
+    matchLabels:
+      k8s-app: kube-dns
+  podMetricsEndpoints:
+  - port: metrics
+    path: /metrics
+    relabelings:
+    - action: keep
+      sourceLabels: [__meta_kubernetes_pod_ready]
+      regex: "true"
+    - action: replace
+      targetLabel: job
+      replacement: kube-dns
+    - action: replace
+      sourceLabels: [__meta_kubernetes_pod_node_name]
+      regex: "(.+)-(?:control-plane|worker.*)"
+      targetLabel: cluster
+      replacement: $1
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: forwarder
+  namespace: monitoring
+  labels:
+    dns-testing: "enabled"
+spec:
+  namespaceSelector:
+    matchNames:
+    - dns
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: coredns
+  podMetricsEndpoints:
+  # The coredns chart always declares containerPort 9153 as "tcp-9153".
+  - port: tcp-9153
+    path: /metrics
+    relabelings:
+    - action: keep
+      sourceLabels: [__meta_kubernetes_pod_ready]
+      regex: "true"
+    - action: replace
+      targetLabel: job
+      replacement: forwarder
+    - action: replace
+      sourceLabels: [__meta_kubernetes_pod_node_name]
+      regex: "(.+)-(?:control-plane|worker.*)"
+      targetLabel: cluster
+      replacement: $1
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: pdns
+  namespace: monitoring
+  labels:
+    dns-testing: "enabled"
+spec:
+  namespaceSelector:
+    matchNames:
+    - dns
+  selector:
+    matchLabels:
+      app: pdns
+  podMetricsEndpoints:
+  - port: api
+    path: /metrics
+    relabelings:
+    - action: keep
+      sourceLabels: [__meta_kubernetes_pod_ready]
+      regex: "true"
+    - action: replace
+      targetLabel: job
+      replacement: pdns
+    - action: replace
+      sourceLabels: [__meta_kubernetes_pod_node_name]
+      regex: "(.+)-(?:control-plane|worker.*)"
+      targetLabel: cluster
+      replacement: $1
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: dns-traffic-generator
+  namespace: monitoring
+  labels:
+    dns-testing: "enabled"
+spec:
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchExpressions:
+    - key: app
+      operator: In
+      values:
+      - dns-traffic-generator-zurich
+      - dns-traffic-generator-berne
+  podMetricsEndpoints:
+  - port: metrics
+    path: /metrics
+    relabelings:
+    - action: keep
+      sourceLabels: [__meta_kubernetes_pod_ready]
+      regex: "true"
+    - action: replace
+      targetLabel: job
+      replacement: dns-traffic-generator
+    - action: replace
+      sourceLabels: [__meta_kubernetes_pod_node_name]
+      regex: "(.+)-(?:control-plane|worker.*)"
+      targetLabel: cluster
+      replacement: $1

@@ -5,6 +5,17 @@ metadata:
   namespace: kube-system
 data:
   Corefile: |
+    # Own server block so CoreDNS tags 5gc traffic with zone="5gc.3gppnetwork.org."
+    5gc.3gppnetwork.org.:53 {
+        errors
+        prometheus :9153
+        forward . 10.96.0.11 {
+           max_concurrent 1000
+           policy sequential
+        }
+        reload
+    }
+
     .:53 {
         errors
         health {

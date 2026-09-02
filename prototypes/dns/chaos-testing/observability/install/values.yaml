@@ -1,0 +1,147 @@
+# kube-prometheus-stack profile for the central Prometheus + Grafana, installed into the
+# `monitoring` namespace of kind-zurich.
+#
+# This Prometheus does two jobs at once:
+#   * it scrapes zurich's own DNS components through the PodMonitors in monitors/
+#   * it receives kind-berne's samples over remote-write (enableRemoteWriteReceiver)
+# Grafana renders both from a single datasource.
+
+# --- Drop everything that monitors the cluster itself ---
+defaultRules:
+  create: false
+
+alertmanager:
+  enabled: false
+
+nodeExporter:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+kubelet:
+  enabled: false
+
+kubeApiServer:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+coreDns:
+  enabled: false
+
+kubeDns:
+  enabled: false
+
+prometheusOperator:
+  serviceMonitor:
+    selfMonitor: false
+  # No webhook = no cert-generation Jobs and no extra moving parts.
+  admissionWebhooks:
+    enabled: false
+    patch:
+      enabled: false
+  tls:
+    enabled: false
+
+prometheus:
+  serviceMonitor:
+    selfMonitor: false
+
+  # kind-berne's agent writes here over the shared "kind" docker network.
+  # setup-kind.sh gives zurich the MetalLB pool 172.18.2.0/24 and hands the low
+  # addresses out to coredns-ext-service / pdns-ext-service, so .100 is well clear.
+  #
+  # The annotation domain must be metallb.universe.tf, NOT metallb.io. MetalLB 0.14.8
+  # moved its CRDs to metallb.io but kept annotations on the old domain, and it ignores
+  # the metallb.io spelling in silence — you just get an auto-assigned address instead.
+  service:
+    type: LoadBalancer
+    port: 9090
+    annotations:
+      metallb.universe.tf/loadBalancerIPs: 172.18.2.100
+
+  prometheusSpec:
+    # --- Accept pushes from kind-berne's agent ---
+    enableRemoteWriteReceiver: true
+
+    # --- Single instance, no HA, no sharding ---
+    replicas: 1
+    shards: 1
+
+    # Matches the cadence berne's agent scrapes at, so both clusters line up.
+    scrapeInterval: 5s
+    scrapeTimeout: 5s
+    evaluationInterval: 1m
+
+    # --- Retention ---
+    retention: 1h
+    retentionSize: 1GB
+    walCompression: true
+
+    # Pick up the DNS PodMonitors (labelled dns-testing: enabled) from any namespace.
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector:
+      matchLabels:
+        dns-testing: "enabled"
+    podMonitorNamespaceSelector: {}
+
+    # Everything else matches nothing.
+    scrapeConfigSelectorNilUsesHelmValues: false
+    scrapeConfigSelector:
+      matchLabels:
+        dns-testing: "unused"
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector:
+      matchLabels:
+        dns-testing: "unused"
+    probeSelectorNilUsesHelmValues: false
+    probeSelector:
+      matchLabels:
+        dns-testing: "unused"
+    ruleSelectorNilUsesHelmValues: false
+    ruleSelector:
+      matchLabels:
+        dns-testing: "unused"
+
+    # Requests only: a memory limit here would risk OOMKill restarts.
+    resources:
+      requests:
+        cpu: 100m
+        memory: 400Mi
+
+grafana:
+  replicas: 1
+  adminPassword: "admin"
+  # The stack ships ~16 Kubernetes dashboards that would have no data here,
+  # since this cluster monitors nothing about itself.
+  defaultDashboardsEnabled: false
+  imageRenderer:
+    enabled: false
+  serviceMonitor:
+    enabled: false
+  # Picks up any ConfigMap labelled grafana_dashboard="1" and provisions it.
+  # This replaces the old curl-based upload script.
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: monitoring
+      folder: /tmp/dashboards
+      provider:
+        foldersFromFilesStructure: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi

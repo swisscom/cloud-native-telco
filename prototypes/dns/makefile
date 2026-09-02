@@ -1,4 +1,7 @@
-.PHONY: demo1 demo2 demo3 demo2-fresh demo3-fresh
+.PHONY: colima demo1 demo2 demo3 demo2-fresh demo3-fresh
+
+colima:
+	./setup-colima.sh
 
 demo1:
 	./prepare-demo1.sh
