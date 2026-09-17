@@ -14,6 +14,7 @@ Explore our ***end-to-end Cloud Native Telco Platform Automation at Swisscom*** 
 
 | Year | Conference/Platform | Talk Title | Slides | Video | Code Examples |
 |------|------------|------------|--------|-------|--------------|
+| 2026 | Swiss Cloud Native Day | The Accidental Platform Team: Kubernetes Operators at Swisscom | [PDF](2026/SwissCloudNativeDay/The-accidental-platform-team-kuberntes-operators-at-swisscom.pdf) |  |  |
 | 2026 | Container Days Conference | It's Always DNS, So Let's Break It on Purpose | [PDF](2026/ContainerDaysConference/2026-09-03-Its-Always-DNS-So-Lets-Break-It-On-Purpose.pdf) |  | [Smoke Test](prototypes/dns/3-demo-multi-cluster-dns), [Chaos Test](prototypes/dns/chaos-testing) |
 | 2026 | Container Days Conference | Panel: Why Is It So Hard to Run a 5G Core on Kubernetes—And What Needs to Change for 6G | [PDF](2026/ContainerDaysConference/2026-09-03-Panel-Why-is-it-so-hard-to-run-a-5g-core-on-kubernetes-and-what-needs-to-change-for-6g.pdf) |  |  |
 | 2026 | KubeCon + CloudNativeCon Europe | [Why Is It So Hard to Run a 5G Core on Kubernetes—And What Needs to Change for 6G](https://kccnceu2026.sched.com/event/2CW0G/why-is-it-so-hard-to-run-a-5g-core-on-kubernetes-and-what-needs-to-change-for-6g-joel-studler-swisscom-ashan-senevirathne-telstra) | [PDF](2026/KubeConEurope/2026-03-24-Why-is-it-so-hard-to-run-a-5g-core-on-kubernetes-and-what-needs-to-change-for-6g.pdf) | [YouTube](https://www.youtube.com/watch?v=duYk-FjcKAg) | |
