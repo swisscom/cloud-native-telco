@@ -14,6 +14,7 @@ Explore our ***end-to-end Cloud Native Telco Platform Automation at Swisscom*** 
 
 | Year | Conference/Platform | Talk Title | Slides | Video | Code Examples |
 |------|------------|------------|--------|-------|--------------|
+| 2026 | SwiNOG #42 | The Accidental Platform Team: Kubernetes Operators at Swisscom | [PDF](2026/swinog42/2026-10-21-swinog-accidental-platform-team.pdf) | [YouTube](https://youtu.be/7kWNTz5mPek) |  |
 | 2026 | SwiNOG #42 | The Cloud-Native Advantage: Intent-based Network Automation | [PDF](2026/swinog42/2026-10-21-The-Cloud-Native-Advantage.pdf) | [YouTube](https://youtu.be/WmebR1Lf5lE) |  |
 | 2026 | Swiss Cloud Native Day | The Accidental Platform Team: Kubernetes Operators at Swisscom | [PDF](2026/SwissCloudNativeDay/The-accidental-platform-team-kuberntes-operators-at-swisscom.pdf) |  |  |
 | 2026 | Container Days Conference | It's Always DNS, So Let's Break It on Purpose | [PDF](2026/ContainerDaysConference/2026-09-03-Its-Always-DNS-So-Lets-Break-It-On-Purpose.pdf) | [YouTube](https://www.youtube.com/watch?v=OtC6udOCNe4) | [Smoke Test](prototypes/dns/3-demo-multi-cluster-dns), [Chaos Test](prototypes/dns/chaos-testing) |
