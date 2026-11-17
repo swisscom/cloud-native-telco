@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/configuration-chainsaw-v1alpha2.json
+apiVersion: chainsaw.kyverno.io/v1alpha2
+kind: Configuration
+metadata:
+  name: demo
+spec:
+  timeouts:
+    # pulling images on a fresh cluster takes longer than the 30s default
+    assert: 3m
+    exec: 1m
+  execution:
+    parallel: 4

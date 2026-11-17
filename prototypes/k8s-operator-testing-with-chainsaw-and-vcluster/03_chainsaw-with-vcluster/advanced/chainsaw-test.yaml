@@ -1,0 +1,84 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: advanced-deployment-self-healing
+spec:
+  description: |
+    Apply a Deployment, assert it is ready, delete its pods and assert
+    that the Deployment heals itself and becomes ready again.
+  bindings:
+    - name: app
+      value: web
+  steps:
+    - name: create-deployment
+      try:
+        - apply:
+            file: deployment.yaml
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: ($app)
+              status:
+                readyReplicas: 2
+
+    - name: delete-pods
+      try:
+        # Deletes every pod matching the label selector and waits until they are gone.
+        - delete:
+            ref:
+              apiVersion: v1
+              kind: Pod
+              labels:
+                app: ($app)
+        - script:
+            env:
+              - name: NAMESPACE
+                value: ($namespace)
+              - name: APP
+                value: ($app)
+            content: kubectl get pods -n $NAMESPACE -l app=$APP -o wide
+
+    - name: assert-ready-again
+      try:
+        # The old pods are gone, so any ready pod must be a replacement.
+        - assert:
+            resource:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                labels:
+                  app: ($app)
+              status:
+                phase: Running
+                (conditions[?type == 'Ready']):
+                  - status: "True"
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: ($app)
+              status:
+                readyReplicas: 2
+                (conditions[?type == 'Available']):
+                  - status: "True"
+      # Only runs if a try operation fails: collect diagnostics for the report.
+      catch:
+        - describe:
+            apiVersion: apps/v1
+            kind: Deployment
+            name: ($app)
+        - podLogs:
+            selector: (join('=', ['app', $app]))
+        - events: {}
+      finally:
+        - script:
+            env:
+              - name: NAMESPACE
+                value: ($namespace)
+              - name: APP
+                value: ($app)
+            content: kubectl get deploy,rs,pods -n $NAMESPACE -l app=$APP
