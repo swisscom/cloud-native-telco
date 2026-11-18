@@ -1,0 +1,9 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: pg
+status:
+  instances: 2
+  readyInstances: 2
+  phase: Cluster in healthy state
+  (currentPrimary != null): true

@@ -1,0 +1,9 @@
+# Partial object: only the fields listed here are compared against the live Deployment.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+status:
+  readyReplicas: 2
+  (conditions[?type == 'Available']):
+    - status: "True"

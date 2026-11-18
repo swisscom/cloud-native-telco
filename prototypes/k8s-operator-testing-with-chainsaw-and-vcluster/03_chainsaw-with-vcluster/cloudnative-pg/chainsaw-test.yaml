@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/kyverno/chainsaw/main/.schemas/json/test-chainsaw-v1alpha1.json
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: cloudnative-pg
+spec:
+  description: |
+    Multi-controller test: install the CloudNativePG operator (CRDs, cluster-wide
+    RBAC, webhooks), create a PostgreSQL cluster and verify it is actually usable.
+  steps:
+    - name: install-operator
+      try:
+        # Cluster-scoped install: this is exactly what would clash on a shared cluster.
+        - script:
+            timeout: 5m
+            content: |
+              helm upgrade --install cnpg cloudnative-pg \
+                --repo https://cloudnative-pg.github.io/charts \
+                --namespace cnpg-system --create-namespace --wait
+        - assert:
+            resource:
+              apiVersion: apiextensions.k8s.io/v1
+              kind: CustomResourceDefinition
+              metadata:
+                name: clusters.postgresql.cnpg.io
+              status:
+                (conditions[?type == 'Established']):
+                  - status: "True"
+        - assert:
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: cnpg-cloudnative-pg
+                namespace: cnpg-system
+              status:
+                readyReplicas: 1
+
+    - name: create-postgres-cluster
+      try:
+        - apply:
+            file: cluster.yaml
+        - assert:
+            file: cluster-assert.yaml
+      catch:
+        - describe:
+            apiVersion: postgresql.cnpg.io/v1
+            kind: Cluster
+            name: pg
+        - podLogs:
+            namespace: cnpg-system
+            selector: app.kubernetes.io/name=cloudnative-pg
+            tail: 50
+        - events: {}
+
+    - name: smoke-test-postgres
+      try:
+        # Reuse the operand image (already on the node, ships psql) for the client Job.
+        - script:
+            env:
+              - name: NAMESPACE
+                value: ($namespace)
+            content: kubectl get cluster pg -n $NAMESPACE -o jsonpath='{.status.image}'
+            outputs:
+              - name: image
+                value: ($stdout)
+        - apply:
+            file: smoke-test-job.yaml
+        - assert:
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: pg-smoke-test
+              status:
+                succeeded: 1
+      catch:
+        - podLogs:
+            selector: job-name=pg-smoke-test
+        - events: {}

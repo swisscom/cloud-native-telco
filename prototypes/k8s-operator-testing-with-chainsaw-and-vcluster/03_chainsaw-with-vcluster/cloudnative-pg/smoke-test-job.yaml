@@ -1,0 +1,47 @@
+# Writes a row through the read-write service (primary) and reads it back
+# through the read-only service (replica) to prove the database is usable
+# and that streaming replication works.
+# `($image)` is a chainsaw binding, resolved when the test applies this file.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pg-smoke-test
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: psql
+          image: ($image)
+          env:
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: pg-app
+                  key: username
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pg-app
+                  key: password
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: pg-app
+                  key: dbname
+          command: ["sh", "-ec"]
+          args:
+            - |
+              psql -h pg-rw -v ON_ERROR_STOP=1 \
+                -c "CREATE TABLE IF NOT EXISTS chainsaw (id int PRIMARY KEY, msg text)" \
+                -c "INSERT INTO chainsaw VALUES (1, 'hello from chainsaw') ON CONFLICT DO NOTHING"
+              for i in $(seq 1 30); do
+                if psql -h pg-ro -tAc "SELECT msg FROM chainsaw WHERE id = 1" | grep -q "hello from chainsaw"; then
+                  echo "row replicated to replica"
+                  exit 0
+                fi
+                sleep 1
+              done
+              echo "row not found on replica" >&2
+              exit 1
